@@ -50,8 +50,15 @@
 `define TRACE(level, args) if (level <= `DEBUG_LEVEL) $write args
 `else
 `ifdef VERILATOR
+
+`ifndef TRACING_ALL
 `define TRACING_ON      /* verilator tracing_on */
 `define TRACING_OFF     /* verilator tracing_off */
+`else
+`define TRACING_ON
+`define TRACING_OFF
+`endif
+
 `ifndef NDEBUG
     `define DEBUG_BLOCK(x) /* verilator lint_off UNUSED */ \
                            x \
@@ -239,10 +246,13 @@
     `RESET_RELAY_EX (dst, src, 1, 0)
 
 // size(x): 0 -> 0, 1 -> 1, 2 -> 2, 3 -> 2, 4-> 2, 5 -> 2
-`define TO_OUT_BUF_SIZE(s)    `MIN(s, 2)
+`define TO_OUT_BUF_SIZE(s)    `MIN(s & 7, 2)
 
 // reg(x): 0 -> 0, 1 -> 1, 2 -> 0, 3 -> 1, 4 -> 2, 5 > 3
-`define TO_OUT_BUF_REG(s)     ((s < 2) ? s : (s - 2))
+`define TO_OUT_BUF_REG(s)     (((s & 7) < 2) ? (s & 7) : ((s & 7) - 2))
+
+// lut(x): (x & 8) != 0
+`define TO_OUT_BUF_LUTRAM(s)  ((s & 8) != 0)
 
 `define REPEAT(n,f,s)   `_REPEAT_``n(f,s)
 `define _REPEAT_0(f,s)

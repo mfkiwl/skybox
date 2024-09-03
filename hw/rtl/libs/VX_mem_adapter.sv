@@ -97,10 +97,26 @@ module VX_mem_adapter #(
             assign mem_req_addr_out_w = mem_req_addr_in_qual;
         end
 
+        VX_decoder #(
+            .N (D),
+            .M (SRC_DATA_WIDTH/8)
+        ) req_be_dec (
+            .data_in  (req_idx),
+            .valid_in (mem_req_byteen_in),
+            .data_out (mem_req_byteen_out_w)
+        );
+
+        VX_decoder #(
+            .N (D),
+            .M (SRC_DATA_WIDTH)
+        ) req_data_dec (
+            .data_in  (req_idx),
+            .valid_in (mem_req_data_in),
+            .data_out (mem_req_data_out_w)
+        );
+
         assign mem_req_valid_out_w  = mem_req_valid_in;
         assign mem_req_rw_out_w     = mem_req_rw_in;
-        assign mem_req_byteen_out_w = DST_DATA_SIZE'(mem_req_byteen_in) << ((DST_LDATAW-3)'(req_idx) << (SRC_LDATAW-3));
-        assign mem_req_data_out_w   = DST_DATA_WIDTH'(mem_req_data_in) << ((DST_LDATAW'(req_idx)) << SRC_LDATAW);
         assign mem_req_tag_out_w    = DST_TAG_WIDTH'({mem_req_tag_in, req_idx});
         assign mem_req_ready_in     = mem_req_ready_out_w;
 
@@ -153,7 +169,7 @@ module VX_mem_adapter #(
         end
         assign mem_rsp_tag_in_x = (rsp_ctr != 0) ? mem_rsp_tag_in_r : mem_rsp_tag_out;
         `RUNTIME_ASSERT(!mem_rsp_in_fire || (mem_rsp_tag_in_x == mem_rsp_tag_out),
-            ("%t: *** out-of-order memory reponse! cur=%d, expected=%d", $time, mem_rsp_tag_in_x, mem_rsp_tag_out))
+            ("%t: *** out-of-order memory reponse! cur=0x%0h, expected=0x%0h", $time, mem_rsp_tag_in_x, mem_rsp_tag_out))
 
         wire [SRC_ADDR_WIDTH+D-1:0] mem_req_addr_in_qual = {mem_req_addr_in, req_ctr};
 

@@ -214,6 +214,8 @@ extern int vx_dump_perf(vx_device_h hdevice, FILE* stream) {
   uint64_t mem_reads = 0;
   uint64_t mem_writes = 0;
   uint64_t mem_lat = 0;
+  uint64_t mem_req_counter = 0;
+  uint64_t mem_ticks = 0;
   // PERF: texunit
   uint64_t tex_mem_reads = 0;
   uint64_t tex_mem_lat = 0;
@@ -250,6 +252,11 @@ extern int vx_dump_perf(vx_device_h hdevice, FILE* stream) {
 
   uint64_t isa_flags;
   CHECK_ERR(vx_dev_caps(hdevice, VX_CAPS_ISA_FLAGS, &isa_flags), {
+    return err;
+  });
+
+  uint64_t num_mem_bank_ports;
+  CHECK_ERR(vx_dev_caps(hdevice, VX_CAPS_NUM_MEM_BANKS, &num_mem_bank_ports), {
     return err;
   });
 
@@ -582,6 +589,12 @@ extern int vx_dump_perf(vx_device_h hdevice, FILE* stream) {
         CHECK_ERR(vx_mpm_query(hdevice, VX_CSR_MPM_MEM_LT, core_id, &mem_lat), {
           return err;
         });
+        CHECK_ERR(vx_mpm_query(hdevice, VX_CSR_MPM_MEM_BANK_CNTR, core_id, &mem_req_counter), {
+          return err;
+        });
+        CHECK_ERR(vx_mpm_query(hdevice, VX_CSR_MPM_MEM_BANK_TICK, core_id, &mem_ticks), {
+          return err;
+        });
       }
     } break;
     case VX_DCR_MPM_CLASS_TEX: {
@@ -719,8 +732,10 @@ extern int vx_dump_perf(vx_device_h hdevice, FILE* stream) {
       fprintf(stream, "PERF: l3cache mshr stalls=%ld (utilization=%d%%)\n", l3cache_mshr_stalls, mshr_utilization);
     }
     int mem_avg_lat = caclAverage(mem_lat, mem_reads);
+    int memory_bank_port_utilization = calcAvgPercent(mem_req_counter, (mem_ticks * num_mem_bank_ports));
     fprintf(stream, "PERF: memory requests=%ld (reads=%ld, writes=%ld)\n", (mem_reads + mem_writes), mem_reads, mem_writes);
     fprintf(stream, "PERF: memory latency=%d cycles\n", mem_avg_lat);
+    fprintf(stream, "PERF: memory bank port utilization=%d%%\n", memory_bank_port_utilization);
   } break;
   case VX_DCR_MPM_CLASS_TEX: {
     tex_mem_reads /= num_cores;

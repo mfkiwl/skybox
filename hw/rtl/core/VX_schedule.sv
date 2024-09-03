@@ -189,7 +189,7 @@ module VX_schedule import VX_gpu_pkg::*; #(
         end
 
         // decode unlock
-        if (decode_sched_if.valid && ~decode_sched_if.is_wstall) begin
+        if (decode_sched_if.valid && decode_sched_if.unlock) begin
             stalled_warps_n[decode_sched_if.wid] = 0;
         end
 
@@ -356,7 +356,9 @@ module VX_schedule import VX_gpu_pkg::*; #(
 `endif
 
     VX_elastic_buffer #(
-        .DATAW (`NUM_THREADS + `PC_BITS + `NW_WIDTH)
+        .DATAW (`NUM_THREADS + `PC_BITS + `NW_WIDTH),
+        .SIZE  (2),  // need to buffer out ready_in
+        .OUT_REG (1) // should be registered for BRAM acces in fetch unit
     ) out_buf (
         .clk       (clk),
         .reset     (reset),
@@ -372,28 +374,19 @@ module VX_schedule import VX_gpu_pkg::*; #(
 
     // Track pending instructions per warp
 
-    reg [`NUM_WARPS-1:0] per_warp_incr;
-    always @(*) begin
-        per_warp_incr = 0;
-        if (schedule_if_fire) begin
-            per_warp_incr[schedule_if.data.wid] = 1;
-        end
-    end
-
     wire [`NUM_WARPS-1:0] pending_warp_empty;
     wire [`NUM_WARPS-1:0] pending_warp_alm_empty;
 
-    `RESET_RELAY_EX (pending_instr_reset, reset, `NUM_WARPS, `MAX_FANOUT);
+    `RESET_RELAY (pending_instr_reset, reset);
 
-    for (genvar i = 0; i < `NUM_WARPS; ++i) begin
-
+    for (genvar i = 0; i < `NUM_WARPS; ++i) begin : pending_sizes
         VX_pending_size #(
             .SIZE      (4096),
             .ALM_EMPTY (1)
         ) counter (
             .clk       (clk),
-            .reset     (pending_instr_reset[i]),
-            .incr      (per_warp_incr[i]),
+            .reset     (pending_instr_reset),
+            .incr      (schedule_if_fire && (schedule_if.data.wid == `NW_WIDTH'(i))),
             .decr      (commit_sched_if.committed_warps[i]),
             .empty     (pending_warp_empty[i]),
             .alm_empty (pending_warp_alm_empty[i]),
@@ -422,7 +415,7 @@ module VX_schedule import VX_gpu_pkg::*; #(
             timeout_ctr    <= '0;
             timeout_enable <= 0;
         end else begin
-            if (decode_sched_if.valid && ~decode_sched_if.is_wstall) begin
+            if (decode_sched_if.valid && decode_sched_if.unlock) begin
                 timeout_enable <= 1;
             end
             if (timeout_enable && active_warps !=0 && active_warps == stalled_warps) begin

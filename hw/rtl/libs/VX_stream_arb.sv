@@ -21,7 +21,6 @@ module VX_stream_arb #(
     parameter `STRING ARBITER = "R",
     parameter MAX_FANOUT    = `MAX_FANOUT,
     parameter OUT_BUF       = 0,
-    parameter LUTRAM        = 0,
     parameter NUM_REQS      = `CDIV(NUM_INPUTS, NUM_OUTPUTS),
     parameter LOG_NUM_REQS  = `CLOG2(NUM_REQS),
     parameter NUM_REQS_W    = `UP(LOG_NUM_REQS)
@@ -50,19 +49,16 @@ module VX_stream_arb #(
                 localparam SLICE_END   = `MIN(SLICE_BEGIN + NUM_REQS, NUM_INPUTS);
                 localparam SLICE_SIZE  = SLICE_END - SLICE_BEGIN;
 
-                `RESET_RELAY (slice_reset, reset);
-
                 VX_stream_arb #(
                     .NUM_INPUTS  (SLICE_SIZE),
                     .NUM_OUTPUTS (1),
                     .DATAW       (DATAW),
                     .ARBITER     (ARBITER),
                     .MAX_FANOUT  (MAX_FANOUT),
-                    .OUT_BUF     (OUT_BUF),
-                    .LUTRAM      (LUTRAM)
+                    .OUT_BUF     (OUT_BUF)
                 ) arb_slice (
                     .clk       (clk),
-                    .reset     (slice_reset),
+                    .reset     (reset),
                     .valid_in  (valid_in[SLICE_END-1: SLICE_BEGIN]),
                     .ready_in  (ready_in[SLICE_END-1: SLICE_BEGIN]),
                     .data_in   (data_in[SLICE_END-1: SLICE_BEGIN]),
@@ -94,8 +90,6 @@ module VX_stream_arb #(
                 wire [DATAW-1:0] data_tmp_u;
                 wire [`LOG2UP(SLICE_SIZE)-1:0] sel_tmp_u;
 
-                `RESET_RELAY (slice_reset, reset);
-
                 if (MAX_FANOUT != 1) begin
                     VX_stream_arb #(
                         .NUM_INPUTS  (SLICE_SIZE),
@@ -103,11 +97,10 @@ module VX_stream_arb #(
                         .DATAW       (DATAW),
                         .ARBITER     (ARBITER),
                         .MAX_FANOUT  (MAX_FANOUT),
-                        .OUT_BUF     (3), // registered output
-                        .LUTRAM      (LUTRAM)
+                        .OUT_BUF     (3)
                     ) fanout_slice_arb (
                         .clk       (clk),
-                        .reset     (slice_reset),
+                        .reset     (reset),
                         .valid_in  (valid_in[SLICE_END-1: SLICE_BEGIN]),
                         .data_in   (data_in[SLICE_END-1: SLICE_BEGIN]),
                         .ready_in  (ready_in[SLICE_END-1: SLICE_BEGIN]),
@@ -130,8 +123,7 @@ module VX_stream_arb #(
                 .DATAW       (DATAW + LOG_NUM_REQS2),
                 .ARBITER     (ARBITER),
                 .MAX_FANOUT  (MAX_FANOUT),
-                .OUT_BUF     (OUT_BUF),
-                .LUTRAM      (LUTRAM)
+                .OUT_BUF     (OUT_BUF)
             ) fanout_join_arb (
                 .clk       (clk),
                 .reset     (reset),
@@ -151,9 +143,9 @@ module VX_stream_arb #(
 
             // (#inputs <= max_fanout) and (#outputs == 1)
 
-            wire                    valid_in_r;
-            wire [DATAW-1:0]        data_in_r;
-            wire                    ready_in_r;
+            wire                    valid_in_w;
+            wire [DATAW-1:0]        data_in_w;
+            wire                    ready_in_w;
 
             wire                    arb_valid;
             wire [NUM_REQS_W-1:0]   arb_index;
@@ -173,25 +165,25 @@ module VX_stream_arb #(
                 .grant_ready  (arb_ready)
             );
 
-            assign valid_in_r = arb_valid;
-            assign data_in_r  = data_in[arb_index];
-            assign arb_ready  = ready_in_r;
+            assign valid_in_w = arb_valid;
+            assign data_in_w  = data_in[arb_index];
+            assign arb_ready  = ready_in_w;
 
             for (genvar i = 0; i < NUM_REQS; ++i) begin
-                assign ready_in[i] = ready_in_r && arb_onehot[i];
+                assign ready_in[i] = ready_in_w && arb_onehot[i];
             end
 
             VX_elastic_buffer #(
                 .DATAW   (LOG_NUM_REQS + DATAW),
                 .SIZE    (`TO_OUT_BUF_SIZE(OUT_BUF)),
                 .OUT_REG (`TO_OUT_BUF_REG(OUT_BUF)),
-                .LUTRAM  (LUTRAM)
+                .LUTRAM  (`TO_OUT_BUF_LUTRAM(OUT_BUF))
             ) out_buf (
                 .clk       (clk),
                 .reset     (reset),
-                .valid_in  (valid_in_r),
-                .ready_in  (ready_in_r),
-                .data_in   ({arb_index, data_in_r}),
+                .valid_in  (valid_in_w),
+                .ready_in  (ready_in_w),
+                .data_in   ({arb_index, data_in_w}),
                 .data_out  ({sel_out, data_out}),
                 .valid_out (valid_out),
                 .ready_out (ready_out)
@@ -210,19 +202,16 @@ module VX_stream_arb #(
                 localparam SLICE_END   = `MIN(SLICE_BEGIN + NUM_REQS, NUM_OUTPUTS);
                 localparam SLICE_SIZE  = SLICE_END - SLICE_BEGIN;
 
-                `RESET_RELAY (slice_reset, reset);
-
                 VX_stream_arb #(
                     .NUM_INPUTS  (1),
                     .NUM_OUTPUTS (SLICE_SIZE),
                     .DATAW       (DATAW),
                     .ARBITER     (ARBITER),
                     .MAX_FANOUT  (MAX_FANOUT),
-                    .OUT_BUF     (OUT_BUF),
-                    .LUTRAM      (LUTRAM)
+                    .OUT_BUF     (OUT_BUF)
                 ) arb_slice (
                     .clk       (clk),
-                    .reset     (slice_reset),
+                    .reset     (reset),
                     .valid_in  (valid_in[i]),
                     .ready_in  (ready_in[i]),
                     .data_in   (data_in[i]),
@@ -253,8 +242,7 @@ module VX_stream_arb #(
                 .DATAW       (DATAW),
                 .ARBITER     (ARBITER),
                 .MAX_FANOUT  (MAX_FANOUT),
-                .OUT_BUF     (3), // registered output
-                .LUTRAM      (LUTRAM)
+                .OUT_BUF     (3)
             ) fanout_fork_arb (
                 .clk       (clk),
                 .reset     (reset),
@@ -273,19 +261,16 @@ module VX_stream_arb #(
                 localparam SLICE_END   = `MIN(SLICE_BEGIN + MAX_FANOUT, NUM_OUTPUTS);
                 localparam SLICE_SIZE  = SLICE_END - SLICE_BEGIN;
 
-                `RESET_RELAY (slice_reset, reset);
-
                 VX_stream_arb #(
                     .NUM_INPUTS  (1),
                     .NUM_OUTPUTS (SLICE_SIZE),
                     .DATAW       (DATAW),
                     .ARBITER     (ARBITER),
                     .MAX_FANOUT  (MAX_FANOUT),
-                    .OUT_BUF     (OUT_BUF),
-                    .LUTRAM      (LUTRAM)
+                    .OUT_BUF     (OUT_BUF)
                 ) fanout_slice_arb (
                     .clk       (clk),
-                    .reset     (slice_reset),
+                    .reset     (reset),
                     .valid_in  (valid_tmp[i]),
                     .ready_in  (ready_tmp[i]),
                     .data_in   (data_tmp[i]),
@@ -300,7 +285,7 @@ module VX_stream_arb #(
 
             // (#inputs == 1) and (#outputs <= max_fanout)
 
-            wire [NUM_OUTPUTS-1:0]  ready_in_r;
+            wire [NUM_OUTPUTS-1:0]  ready_in_w;
 
             wire [NUM_OUTPUTS-1:0]  arb_requests;
             wire                    arb_valid;
@@ -320,7 +305,7 @@ module VX_stream_arb #(
                 .grant_ready  (arb_ready)
             );
 
-            assign arb_requests = ready_in_r;
+            assign arb_requests = ready_in_w;
             assign arb_ready    = valid_in[0];
             assign ready_in     = arb_valid;
 
@@ -329,12 +314,12 @@ module VX_stream_arb #(
                     .DATAW   (DATAW),
                     .SIZE    (`TO_OUT_BUF_SIZE(OUT_BUF)),
                     .OUT_REG (`TO_OUT_BUF_REG(OUT_BUF)),
-                    .LUTRAM  (LUTRAM)
+                    .LUTRAM  (`TO_OUT_BUF_LUTRAM(OUT_BUF))
                 ) out_buf (
                     .clk       (clk),
                     .reset     (reset),
                     .valid_in  (valid_in && arb_onehot[i]),
-                    .ready_in  (ready_in_r[i]),
+                    .ready_in  (ready_in_w[i]),
                     .data_in   (data_in),
                     .data_out  (data_out[i]),
                     .valid_out (valid_out[i]),
@@ -349,18 +334,15 @@ module VX_stream_arb #(
 
         // #Inputs == #Outputs
 
-        `RESET_RELAY_EX (out_buf_reset, reset, NUM_OUTPUTS, `MAX_FANOUT);
-
         for (genvar i = 0; i < NUM_OUTPUTS; ++i) begin
-
             VX_elastic_buffer #(
                 .DATAW   (DATAW),
                 .SIZE    (`TO_OUT_BUF_SIZE(OUT_BUF)),
                 .OUT_REG (`TO_OUT_BUF_REG(OUT_BUF)),
-                .LUTRAM  (LUTRAM)
+                .LUTRAM  (`TO_OUT_BUF_LUTRAM(OUT_BUF))
             ) out_buf (
                 .clk       (clk),
-                .reset     (out_buf_reset[i]),
+                .reset     (reset),
                 .valid_in  (valid_in[i]),
                 .ready_in  (ready_in[i]),
                 .data_in   (data_in[i]),

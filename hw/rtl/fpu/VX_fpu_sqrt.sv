@@ -62,7 +62,7 @@ module VX_fpu_sqrt import VX_fpu_pkg::*; #(
         .DATA_OUT_WIDTH(`FP_FLAGS_BITS + 32),
         .TAG_WIDTH  (NUM_LANES + TAG_WIDTH),
         .PE_REG     (0),
-        .OUT_BUF    (((NUM_LANES / NUM_PES) > 2) ? 1 : 0)
+        .OUT_BUF    (2)
     ) pe_serializer (
         .clk        (clk),
         .reset      (reset),
@@ -71,8 +71,8 @@ module VX_fpu_sqrt import VX_fpu_pkg::*; #(
         .tag_in     ({mask_in, tag_in}),
         .ready_in   (ready_in),
         .pe_enable  (pe_enable),
-        .pe_data_in (pe_data_in),
-        .pe_data_out(pe_data_out),
+        .pe_data_out(pe_data_in),
+        .pe_data_in (pe_data_out),
         .valid_out  (valid_out),
         .data_out   (data_out),
         .tag_out    ({mask_out, tag_out}),
@@ -88,7 +88,7 @@ module VX_fpu_sqrt import VX_fpu_pkg::*; #(
 
 `ifdef QUARTUS
 
-    for (genvar i = 0; i < NUM_PES; ++i) begin
+    for (genvar i = 0; i < NUM_PES; ++i) begin : fsqrts
         acl_fsqrt fsqrt (
             .clk    (clk),
             .areset (1'b0),
@@ -105,7 +105,7 @@ module VX_fpu_sqrt import VX_fpu_pkg::*; #(
 
 `elsif VIVADO
 
-    for (genvar i = 0; i < NUM_PES; ++i) begin
+    for (genvar i = 0; i < NUM_PES; ++i) begin : fsqrts
         wire tuser;
 
         xil_fsqrt fsqrt (
@@ -126,7 +126,7 @@ module VX_fpu_sqrt import VX_fpu_pkg::*; #(
 
 `else
 
-    for (genvar i = 0; i < NUM_PES; ++i) begin
+    for (genvar i = 0; i < NUM_PES; ++i) begin : fsqrts
         reg [63:0] r;
         `UNUSED_VAR (r)
         fflags_t f;

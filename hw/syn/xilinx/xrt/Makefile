@@ -4,7 +4,7 @@ include $(ROOT_DIR)/config.mk
 ifneq ($(findstring Makefile, $(MAKEFILE_LIST)), Makefile)
 help:
 	$(ECHO) "Makefile Usage:"
-	$(ECHO) "  make all TARGET=<sw_emu/hw_emu/hw> PLATFORM=<FPGA platform>"
+	$(ECHO) "  make all TARGET=<hw/hw_emu> PLATFORM=<FPGA platform>"
 	$(ECHO) "      Command to generate the design for specified Target and Device."
 	$(ECHO) ""
 	$(ECHO) "  make clean"
@@ -79,7 +79,7 @@ CONFIGS += $(CONFIGS_$(NUM_CORES)c)
 # include paths
 FPU_INCLUDE = -I$(RTL_DIR)/fpu
 ifneq (,$(findstring FPU_FPNEW,$(CONFIGS)))
-	FPU_INCLUDE += -I$(THIRD_PARTY_DIR)/fpnew/src/common_cells/include -I$(THIRD_PARTY_DIR)/fpnew/src/common_cells/src -I$(THIRD_PARTY_DIR)/fpnew/src/fpu_div_sqrt_mvp/hdl -I$(THIRD_PARTY_DIR)/fpnew/src
+	FPU_INCLUDE += -J$(THIRD_PARTY_DIR)/cvfpu/src/common_cells/include -J$(THIRD_PARTY_DIR)/cvfpu/src/common_cells/src -J$(THIRD_PARTY_DIR)/cvfpu/src/fpu_div_sqrt_mvp/hdl -J$(THIRD_PARTY_DIR)/cvfpu/src
 endif
 TEX_INCLUDE = -I$(RTL_DIR)/tex
 RASTER_INCLUDE = -I$(RTL_DIR)/raster
@@ -97,7 +97,11 @@ else ifeq ($(DEV_ARCH), versal)
 # versal
 else
 # alveo
-VPP_FLAGS += --connectivity.sp vortex_afu_1.m_axi_mem_0:HBM[0:15]
+ifneq ($(findstring xilinx_u55c,$(XSA)),)
+  VPP_FLAGS += --connectivity.sp vortex_afu_1.m_axi_mem_0:HBM[0:31]
+else
+  VPP_FLAGS += --connectivity.sp vortex_afu_1.m_axi_mem_0:HBM[0:15]
+endif
 endif
 
 VPP_FLAGS += --report_level 2
@@ -170,7 +174,7 @@ $(BUILD_DIR)/scope.json: $(BUILD_DIR)/vortex.xml
 
 gen-xo: $(XO_CONTAINER)
 $(XO_CONTAINER): $(BUILD_DIR)/sources.txt
-	mkdir -p $(BUILD_DIR); cd $(BUILD_DIR);	$(VIVADO) -mode batch -source $(SRC_DIR)/scripts/gen_xo.tcl -tclargs ../$(XO_CONTAINER) vortex_afu sources.txt $(SCRIPT_DIR) ../$(BUILD_DIR)
+	mkdir -p $(BUILD_DIR); cd $(BUILD_DIR);	$(VIVADO) -mode batch -source $(SRC_DIR)/../scripts/gen_xo.tcl -tclargs ../$(XO_CONTAINER) vortex_afu sources.txt $(SCRIPT_DIR) ../$(BUILD_DIR)
 
 gen-bin: $(XCLBIN_CONTAINER)
 $(XCLBIN_CONTAINER): $(XO_CONTAINER) $(SCOPE_JSON)

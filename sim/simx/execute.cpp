@@ -1329,7 +1329,7 @@ void Emulator::execute(const Instr &instr, uint32_t wid, instr_trace_t *trace) {
         auto stack_size = warp.ipdom_stack.size();
 
         ThreadMask then_tmask, else_tmask;
-        auto not_pred = rsrc2 & 0x1;
+        auto not_pred = (rsrc1 != 0);
         for (uint32_t t = 0; t < num_threads; ++t) {
           auto cond = (warp.ireg_file.at(t).at(rsrc0) & 0x1) ^ not_pred;
           then_tmask[t] = warp.tmask.test(t) && cond;
@@ -1348,11 +1348,9 @@ void Emulator::execute(const Instr &instr, uint32_t wid, instr_trace_t *trace) {
           } else {
             next_tmask = else_tmask;
           }
-          // push reconvergence thread mask onto the stack
-          warp.ipdom_stack.emplace(warp.tmask);
-          // push not taken thread mask onto the stack
+          // push reconvergence and not-taken thread mask onto the stack
           auto ntaken_tmask = ~next_tmask & warp.tmask;
-          warp.ipdom_stack.emplace(ntaken_tmask, next_pc);
+          warp.ipdom_stack.emplace(warp.tmask, ntaken_tmask, next_pc);
         }
         // return divergent state
         for (uint32_t t = thread_start; t < num_threads; ++t) {
@@ -1373,11 +1371,14 @@ void Emulator::execute(const Instr &instr, uint32_t wid, instr_trace_t *trace) {
             std::cout << "IPDOM stack is empty!\n" << std::flush;
             std::abort();
           }
-          next_tmask = warp.ipdom_stack.top().tmask;
-          if (!warp.ipdom_stack.top().fallthrough) {
+          if (warp.ipdom_stack.top().fallthrough) {
+            next_tmask = warp.ipdom_stack.top().orig_tmask;
+            warp.ipdom_stack.pop();
+          } else {
+            next_tmask = warp.ipdom_stack.top().else_tmask;
             next_pc = warp.ipdom_stack.top().PC;
+            warp.ipdom_stack.top().fallthrough = true;
           }
-          warp.ipdom_stack.pop();
         }
       } break;
       case 4: {
@@ -1553,10 +1554,7 @@ void Emulator::execute(const Instr &instr, uint32_t wid, instr_trace_t *trace) {
   }
 
   if (warp.tmask != next_tmask) {
-    DPH(3, "*** New Tmask=");
-    for (uint32_t i = 0; i < num_threads; ++i)
-      DPN(3, next_tmask.test(i));
-    DPN(3, std::endl);
+    DP(3, "*** New Tmask=" << ThreadMaskOS(next_tmask, num_threads));
     warp.tmask = next_tmask;
     if (!next_tmask.any()) {
       active_warps_.reset(wid);

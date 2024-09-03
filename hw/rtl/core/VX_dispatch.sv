@@ -50,23 +50,19 @@ module VX_dispatch import VX_gpu_pkg::*; #(
         `UNUSED_PIN (valid_out)
     );
 
-    wire [`NUM_EX_UNITS-1:0] operands_reset;
-    assign operands_if.ready = operands_reset[operands_if.data.ex_type];
+    wire [`NUM_EX_UNITS-1:0] operands_ready_in;
+    assign operands_if.ready = operands_ready_in[operands_if.data.ex_type];
 
-    for (genvar i = 0; i < `NUM_EX_UNITS; ++i) begin
-
-        `RESET_RELAY (buffer_reset, reset);
-
+    for (genvar i = 0; i < `NUM_EX_UNITS; ++i) begin : buffers
         VX_elastic_buffer #(
             .DATAW   (DATAW),
             .SIZE    (2),
-            .OUT_REG (2), // 2-cycle EB for area reduction
-            .LUTRAM  (1)
+            .OUT_REG (1)
         ) buffer (
             .clk        (clk),
-            .reset      (buffer_reset),
+            .reset      (reset),
             .valid_in   (operands_if.valid && (operands_if.data.ex_type == `EX_BITS'(i))),
-            .ready_in   (operands_reset[i]),
+            .ready_in   (operands_ready_in[i]),
             .data_in    ({
                 operands_if.data.uuid,
                 operands_if.data.wis,

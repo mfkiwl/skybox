@@ -71,7 +71,7 @@ module VX_fetch import VX_gpu_pkg::*; #(
     // This resolves potential deadlock if ibuffer fills and the LSU stalls the execute stage due to pending dcache requests.
     // This issue is particularly prevalent when the icache and dcache are disabled and both requests share the same bus.
     wire [`NUM_WARPS-1:0] pending_ibuf_full;
-    for (genvar i = 0; i < `NUM_WARPS; ++i) begin
+    for (genvar i = 0; i < `NUM_WARPS; ++i) begin : pending_reads
         VX_pending_size #(
             .SIZE (`IBUF_SIZE)
         ) pending_reads (
@@ -116,7 +116,7 @@ module VX_fetch import VX_gpu_pkg::*; #(
         .ready_out (icache_bus_if.req_ready)
     );
 
-    assign icache_bus_if.req_data.atype  = '0;
+    assign icache_bus_if.req_data.flags  = '0;
     assign icache_bus_if.req_data.rw     = 0;
     assign icache_bus_if.req_data.byteen = 4'b1111;
     assign icache_bus_if.req_data.data   = '0;

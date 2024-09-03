@@ -42,7 +42,7 @@ module VX_lsu_unit import VX_gpu_pkg::*; #(
     VX_dispatch_unit #(
         .BLOCK_SIZE (BLOCK_SIZE),
         .NUM_LANES  (NUM_LANES),
-        .OUT_BUF    (1)
+        .OUT_BUF    (3)
     ) dispatch_unit (
         .clk        (clk),
         .reset      (reset),
@@ -54,9 +54,9 @@ module VX_lsu_unit import VX_gpu_pkg::*; #(
         .NUM_LANES (NUM_LANES)
     ) per_block_commit_if[BLOCK_SIZE]();
 
-    for (genvar block_idx = 0; block_idx < BLOCK_SIZE; ++block_idx) begin : lsu_slices
+    for (genvar block_idx = 0; block_idx < BLOCK_SIZE; ++block_idx) begin : lsus
 
-        `RESET_RELAY (slice_reset, reset);
+        `RESET_RELAY_EN (slice_reset, reset, (BLOCK_SIZE > 1));
 
         VX_lsu_slice #(
             .INSTANCE_ID ($sformatf("%s%0d", INSTANCE_ID, block_idx))

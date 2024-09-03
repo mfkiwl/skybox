@@ -114,12 +114,13 @@ module VX_bank_flush #(
     assign flush_line  = counter_r[`CS_LINE_SEL_BITS-1:0];
 
     if (WRITEBACK && `CS_WAY_SEL_BITS > 0) begin
-        reg [NUM_WAYS-1:0] flush_way_r;
-        always @(*) begin
-            flush_way_r = '0;
-            flush_way_r[counter_r[`CS_LINE_SEL_BITS +: `CS_WAY_SEL_BITS]] = 1;
-        end
-        assign flush_way = flush_way_r;
+        VX_decoder #(
+            .N (`CS_WAY_SEL_BITS)
+        ) ctr_decoder (
+            .data_in  (counter_r[`CS_LINE_SEL_BITS +: `CS_WAY_SEL_BITS]),
+            .valid_in (1'b1),
+            .data_out (flush_way)
+        );
     end else begin
         assign flush_way = {NUM_WAYS{1'b1}};
     end

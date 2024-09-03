@@ -1,10 +1,10 @@
 // Copyright © 2019-2023
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,8 +15,8 @@
 
 `TRACING_OFF
 module VX_stream_unpack #(
-    parameter NUM_REQS      = 1, 
-    parameter DATA_WIDTH    = 1, 
+    parameter NUM_REQS      = 1,
+    parameter DATA_WIDTH    = 1,
     parameter TAG_WIDTH     = 1,
     parameter OUT_BUF       = 0
 ) (
@@ -31,29 +31,25 @@ module VX_stream_unpack #(
     output wire                         ready_in,
 
     // output
-    output wire [NUM_REQS-1:0]          valid_out,    
+    output wire [NUM_REQS-1:0]          valid_out,
     output wire [NUM_REQS-1:0][DATA_WIDTH-1:0] data_out,
     output wire [NUM_REQS-1:0][TAG_WIDTH-1:0] tag_out,
     input wire  [NUM_REQS-1:0]          ready_out
 );
     if (NUM_REQS > 1) begin
 
-        reg [NUM_REQS-1:0] sent_mask;
-        wire [NUM_REQS-1:0] ready_out_r;
+        reg [NUM_REQS-1:0] rem_mask;
+        wire [NUM_REQS-1:0] ready_out_w;
 
-        wire [NUM_REQS-1:0] sent_mask_n = sent_mask | ready_out_r;    
-        wire sent_all = ~(| (mask_in & ~sent_mask_n));
+        wire [NUM_REQS-1:0] rem_mask_n = rem_mask & ~ready_out_w;
+        wire sent_all = ~(| (mask_in & rem_mask_n));
 
         always @(posedge clk) begin
             if (reset) begin
-                sent_mask <= '0;
+                rem_mask <= '1;
             end else begin
                 if (valid_in) begin
-                    if (sent_all) begin
-                        sent_mask <= '0;
-                    end else begin
-                        sent_mask <= sent_mask_n;
-                    end
+                    rem_mask <= sent_all ? '1 : rem_mask_n;
                 end
             end
         end
@@ -68,21 +64,21 @@ module VX_stream_unpack #(
             ) out_buf (
                 .clk       (clk),
                 .reset     (reset),
-                .valid_in  (valid_in && mask_in[i] && ~sent_mask[i]),
-                .ready_in  (ready_out_r[i]),
+                .valid_in  (valid_in && mask_in[i] && rem_mask[i]),
+                .ready_in  (ready_out_w[i]),
                 .data_in   ({data_in[i],  tag_in}),
                 .data_out  ({data_out[i], tag_out[i]}),
                 .valid_out (valid_out[i]),
                 .ready_out (ready_out[i])
             );
         end
-        
+
     end else begin
-        
+
         `UNUSED_VAR (clk)
         `UNUSED_VAR (reset)
         `UNUSED_VAR (mask_in)
-        assign valid_out = valid_in;        
+        assign valid_out = valid_in;
         assign data_out  = data_in;
         assign tag_out   = tag_in;
         assign ready_in  = ready_out;

@@ -220,7 +220,7 @@
 `endif
 `define STACK_SIZE      (1 << `STACK_LOG2_SIZE)
 
-`define RESET_DELAY 8
+`define RESET_DELAY     8
 
 `ifndef STALL_TIMEOUT
 `define STALL_TIMEOUT   (100000 * (1 ** (`L2_ENABLED + `L3_ENABLED)))
@@ -851,7 +851,7 @@
 
 // Number of Banks
 `ifndef L3_NUM_BANKS
-`define L3_NUM_BANKS `MIN(4, `NUM_CLUSTERS)
+`define L3_NUM_BANKS `MIN(8, `NUM_CLUSTERS)
 `endif
 
 // Core Response Queue Size
@@ -882,6 +882,15 @@
 // Enable Cache Writeback
 `ifndef L3_WRITEBACK
 `define L3_WRITEBACK 0
+`endif
+
+`ifndef MEMORY_BANKS
+`define MEMORY_BANKS 8
+`endif
+
+// Number of Memory Ports from LLC
+`ifndef NUM_MEM_PORTS
+`define NUM_MEM_PORTS `MIN(`MEMORY_BANKS, `L3_NUM_BANKS)
 `endif
 
 // ISA Extensions /////////////////////////////////////////////////////////////

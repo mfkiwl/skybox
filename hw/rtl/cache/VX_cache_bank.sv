@@ -53,11 +53,11 @@ module VX_cache_bank #(
     // core request tag size
     parameter TAG_WIDTH         = UUID_WIDTH + 1,
 
-    // Core response output buffer
-    parameter CORE_OUT_BUF      = 0,
+    // Core response output register
+    parameter CORE_OUT_REG      = 0,
 
-    // Memory request output buffer
-    parameter MEM_OUT_BUF       = 0,
+    // Memory request output register
+    parameter MEM_OUT_REG       = 0,
 
     parameter MSHR_ADDR_WIDTH   = `LOG2UP(MSHR_SIZE),
     parameter REQ_SEL_WIDTH     = `UP(`CS_REQ_SEL_BITS),
@@ -266,7 +266,7 @@ module VX_cache_bank #(
     if (UUID_WIDTH != 0) begin
         assign req_uuid_sel = tag_sel[TAG_WIDTH-1 -: UUID_WIDTH];
     end else begin
-        assign req_uuid_sel = 0;
+        assign req_uuid_sel = '0;
     end
 
     VX_pipe_register #(
@@ -283,7 +283,7 @@ module VX_cache_bank #(
     if (UUID_WIDTH != 0) begin
         assign req_uuid_st0 = tag_st0[TAG_WIDTH-1 -: UUID_WIDTH];
     end else begin
-        assign req_uuid_st0 = 0;
+        assign req_uuid_st0 = '0;
     end
 
     wire do_init_st0    = valid_st0 && is_init_st0;
@@ -365,7 +365,7 @@ module VX_cache_bank #(
     if (UUID_WIDTH != 0) begin
         assign req_uuid_st1 = tag_st1[TAG_WIDTH-1 -: UUID_WIDTH];
     end else begin
-        assign req_uuid_st1 = 0;
+        assign req_uuid_st1 = '0;
     end
 
     wire is_read_st1      = is_creq_st1 && ~rw_st1;
@@ -414,12 +414,12 @@ module VX_cache_bank #(
     wire [LINE_SIZE-1:0] dirty_byteen_st1;
 
      if (`CS_WORDS_PER_LINE > 1) begin
-        reg [LINE_SIZE-1:0] write_byteen_r;
+        reg [`CS_WORDS_PER_LINE-1:0][WORD_SIZE-1:0] write_byteen_w;
         always @(*) begin
-            write_byteen_r = '0;
-            write_byteen_r[wsel_st1 * WORD_SIZE +: WORD_SIZE] = byteen_st1;
+            write_byteen_w = '0;
+            write_byteen_w[wsel_st1] = byteen_st1;
         end
-        assign write_byteen_st1 = write_byteen_r;
+        assign write_byteen_st1 = write_byteen_w;
     end else begin
         assign write_byteen_st1 = byteen_st1;
     end
@@ -567,7 +567,7 @@ module VX_cache_bank #(
     VX_elastic_buffer #(
         .DATAW   (TAG_WIDTH + `CS_WORD_WIDTH + REQ_SEL_WIDTH),
         .SIZE    (CRSQ_SIZE),
-        .OUT_REG (`TO_OUT_BUF_REG(CORE_OUT_BUF))
+        .OUT_REG (CORE_OUT_REG)
     ) core_rsp_queue (
         .clk       (clk),
         .reset     (reset),
@@ -622,8 +622,8 @@ module VX_cache_bank #(
         assign mreq_queue_byteen = WRITEBACK ? dirty_byteen_st1 : write_byteen_st1;
     end else begin
         assign mreq_queue_rw = 0;
-        assign mreq_queue_data = 0;
-        assign mreq_queue_byteen = 0;
+        assign mreq_queue_data = '0;
+        assign mreq_queue_byteen = '0;
         `UNUSED_VAR (dirty_data_st1)
         `UNUSED_VAR (dirty_byteen_st1)
     end
@@ -632,7 +632,7 @@ module VX_cache_bank #(
         .DATAW    (1 + `CS_LINE_ADDR_WIDTH + MSHR_ADDR_WIDTH + LINE_SIZE + `CS_LINE_WIDTH + 1),
         .DEPTH    (MREQ_SIZE),
         .ALM_FULL (MREQ_SIZE-PIPELINE_STAGES),
-        .OUT_REG  (`TO_OUT_BUF_REG(MEM_OUT_BUF))
+        .OUT_REG  (MEM_OUT_REG)
     ) mem_req_queue (
         .clk        (clk),
         .reset      (reset),
@@ -673,7 +673,7 @@ module VX_cache_bank #(
         end
         if (core_req_fire) begin
             if (core_req_rw)
-                `TRACE(2, ("%d: %s core-wr-req: addr=0x%0h, tag=0x%0h, req_idx=%0d, byteen=%h, data=0x%h (#%0d)\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(core_req_addr, BANK_ID), core_req_tag, core_req_idx, core_req_byteen, core_req_data, req_uuid_sel));
+                `TRACE(2, ("%d: %s core-wr-req: addr=0x%0h, tag=0x%0h, req_idx=%0d, byteen=0x%h, data=0x%h (#%0d)\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(core_req_addr, BANK_ID), core_req_tag, core_req_idx, core_req_byteen, core_req_data, req_uuid_sel));
             else
                 `TRACE(2, ("%d: %s core-rd-req: addr=0x%0h, tag=0x%0h, req_idx=%0d (#%0d)\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(core_req_addr, BANK_ID), core_req_tag, core_req_idx, req_uuid_sel));
         end
@@ -682,9 +682,9 @@ module VX_cache_bank #(
         end
         if (mreq_queue_push) begin
             if (do_creq_wr_st1 && !WRITEBACK)
-                `TRACE(2, ("%d: %s writethrough: addr=0x%0h, byteen=%h, data=0x%h (#%0d)\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(mreq_queue_addr, BANK_ID), mreq_queue_byteen, mreq_queue_data, req_uuid_st1));
+                `TRACE(2, ("%d: %s writethrough: addr=0x%0h, byteen=0x%h, data=0x%h (#%0d)\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(mreq_queue_addr, BANK_ID), mreq_queue_byteen, mreq_queue_data, req_uuid_st1));
             else if (do_writeback_st1)
-                `TRACE(2, ("%d: %s writeback: addr=0x%0h, byteen=%h, data=0x%h\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(mreq_queue_addr, BANK_ID), mreq_queue_byteen, mreq_queue_data));
+                `TRACE(2, ("%d: %s writeback: addr=0x%0h, byteen=0x%h, data=0x%h\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(mreq_queue_addr, BANK_ID), mreq_queue_byteen, mreq_queue_data));
             else
                 `TRACE(2, ("%d: %s fill-req: addr=0x%0h, mshr_id=%0d (#%0d)\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(mreq_queue_addr, BANK_ID), mreq_queue_id, req_uuid_st1));
         end

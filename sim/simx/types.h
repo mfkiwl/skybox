@@ -60,6 +60,27 @@ typedef std::unordered_map<uint32_t, uint32_t> CSRs;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class ThreadMaskOS {
+public:
+  ThreadMaskOS(const ThreadMask& mask, int size)
+    : mask_(mask)
+    , size_(size)
+  {}
+
+  friend std::ostream& operator<<(std::ostream& os, const ThreadMaskOS& wrapper) {
+    for (int i = 0; i < wrapper.size_; ++i) {
+      os << wrapper.mask_[i];
+    }
+    return os;
+  }
+
+private:
+  const ThreadMask& mask_;
+  int size_;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 enum class RegType {
   None,
   Integer,

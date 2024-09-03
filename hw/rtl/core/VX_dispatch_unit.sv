@@ -55,7 +55,6 @@ module VX_dispatch_unit import VX_gpu_pkg::*; #(
         assign dispatch_if[i].ready = dispatch_ready[i];
     end
 
-    wire [BLOCK_SIZE-1:0][ISSUE_W-1:0] issue_indices;
     wire [BLOCK_SIZE-1:0] block_ready;
     wire [BLOCK_SIZE-1:0][NUM_LANES-1:0] block_tmask;
     wire [BLOCK_SIZE-1:0][2:0][NUM_LANES-1:0][`XLEN-1:0] block_regs;
@@ -66,13 +65,35 @@ module VX_dispatch_unit import VX_gpu_pkg::*; #(
 
     wire batch_done = (& block_done);
 
+    // batch select logic
+
     logic [BATCH_COUNT_W-1:0] batch_idx;
+
     if (BATCH_COUNT != 1) begin
+        wire [BATCH_COUNT_W-1:0] batch_idx_n;
+        wire [BATCH_COUNT-1:0] valid_batches;
+        for (genvar i = 0; i < BATCH_COUNT; ++i) begin
+            assign valid_batches[i] = | dispatch_valid[i * BLOCK_SIZE +: BLOCK_SIZE];
+        end
+
+        VX_generic_arbiter #(
+            .NUM_REQS    (BATCH_COUNT),
+            .TYPE        ("P")
+        ) batch_sel (
+            .clk          (clk),
+            .reset        (reset),
+            .requests     (valid_batches),
+            .grant_index  (batch_idx_n),
+            `UNUSED_PIN (grant_onehot),
+            `UNUSED_PIN (grant_valid),
+            .grant_ready  (batch_done)
+        );
+
         always @(posedge clk) begin
             if (reset) begin
                 batch_idx <= '0;
-            end else begin
-                batch_idx <= batch_idx + BATCH_COUNT_W'(batch_done);
+            end else if (batch_done) begin
+                batch_idx <= batch_idx_n;
             end
         end
     end else begin
@@ -80,16 +101,17 @@ module VX_dispatch_unit import VX_gpu_pkg::*; #(
         `UNUSED_VAR (batch_done)
     end
 
+    wire [BLOCK_SIZE-1:0][ISSUE_W-1:0] issue_indices;
     for (genvar block_idx = 0; block_idx < BLOCK_SIZE; ++block_idx) begin
+        assign issue_indices[block_idx] = ISSUE_W'(batch_idx * BLOCK_SIZE) + ISSUE_W'(block_idx);
+    end
 
-        wire [ISSUE_W-1:0] issue_idx = ISSUE_W'(batch_idx * BLOCK_SIZE) + ISSUE_W'(block_idx);
-        assign issue_indices[block_idx] = issue_idx;
+    for (genvar block_idx = 0; block_idx < BLOCK_SIZE; ++block_idx) begin : blocks
 
-        `RESET_RELAY_EN (block_reset, reset, (BLOCK_SIZE > 1));
-
+        wire [ISSUE_W-1:0] issue_idx = issue_indices[block_idx];
         wire valid_p, ready_p;
 
-        if (`NUM_THREADS != NUM_LANES) begin
+        if (`NUM_THREADS != NUM_LANES) begin : threads_split
             reg [NUM_PACKETS-1:0] sent_mask_p;
             wire [PID_WIDTH-1:0] start_p_n, start_p, end_p;
             wire dispatch_valid_r;
@@ -102,7 +124,7 @@ module VX_dispatch_unit import VX_gpu_pkg::*; #(
             wire fire_eop = fire_p && is_last_p;
 
             always @(posedge clk) begin
-                if (block_reset) begin
+                if (reset) begin
                     sent_mask_p <= '0;
                     is_first_p  <= 1;
                 end else begin
@@ -192,7 +214,7 @@ module VX_dispatch_unit import VX_gpu_pkg::*; #(
             end else begin
                 assign block_ready[block_idx] = ready_p && block_enable;
             end
-            assign block_done[block_idx] = ~dispatch_valid[issue_idx] || fire_eop;
+            assign block_done[block_idx] = fire_eop || ~dispatch_valid[issue_idx];
         end else begin
             assign valid_p = dispatch_valid[issue_idx];
             assign block_tmask[block_idx] = dispatch_data[issue_idx][DATA_TMASK_OFF +: `NUM_THREADS];
@@ -203,7 +225,7 @@ module VX_dispatch_unit import VX_gpu_pkg::*; #(
             assign block_sop[block_idx]   = 1'b1;
             assign block_eop[block_idx]   = 1'b1;
             assign block_ready[block_idx] = ready_p;
-            assign block_done[block_idx]  = ~valid_p || ready_p;
+            assign block_done[block_idx]  = ready_p || ~valid_p;
         end
 
         wire [ISSUE_ISW_W-1:0] isw;
@@ -219,13 +241,15 @@ module VX_dispatch_unit import VX_gpu_pkg::*; #(
 
         wire [`NW_WIDTH-1:0] block_wid = wis_to_wid(dispatch_data[issue_idx][DATA_TMASK_OFF+`NUM_THREADS +: ISSUE_WIS_W], isw);
 
+        logic [OUT_DATAW-1:0] execute_data, execute_data_w;
+
         VX_elastic_buffer #(
             .DATAW   (OUT_DATAW),
             .SIZE    (`TO_OUT_BUF_SIZE(OUT_BUF)),
             .OUT_REG (`TO_OUT_BUF_REG(OUT_BUF))
         ) buf_out (
             .clk       (clk),
-            .reset     (block_reset),
+            .reset     (reset),
             .valid_in  (valid_p),
             .ready_in  (ready_p),
             .data_in   ({
@@ -239,17 +263,27 @@ module VX_dispatch_unit import VX_gpu_pkg::*; #(
                 block_pid[block_idx],
                 block_sop[block_idx],
                 block_eop[block_idx]}),
-            .data_out  (execute_if[block_idx].data),
+            .data_out  (execute_data),
             .valid_out (execute_if[block_idx].valid),
             .ready_out (execute_if[block_idx].ready)
         );
+
+        if (`NUM_THREADS != NUM_LANES) begin
+            assign execute_data_w = execute_data;
+        end else begin
+            always @(*) begin
+                execute_data_w = execute_data;
+                execute_data_w[2:0] = {1'b0, 1'b1, 1'b1}; // default pid, sop, and eop
+            end
+        end
+        assign execute_if[block_idx].data = execute_data_w;
     end
 
     reg [`ISSUE_WIDTH-1:0] ready_in;
     always @(*) begin
         ready_in = 0;
-        for (integer i = 0; i < BLOCK_SIZE; ++i) begin
-            ready_in[issue_indices[i]] = block_ready[i] && block_eop[i];
+        for (integer block_idx = 0; block_idx < BLOCK_SIZE; ++block_idx) begin
+            ready_in[issue_indices[block_idx]] = block_ready[block_idx] && block_eop[block_idx];
         end
     end
     assign dispatch_ready = ready_in;

@@ -69,7 +69,7 @@ module VX_fpu_ncp import VX_fpu_pkg::*; #(
         .DATA_OUT_WIDTH(`FP_FLAGS_BITS + 32),
         .TAG_WIDTH  (NUM_LANES + TAG_WIDTH),
         .PE_REG     (0),
-        .OUT_BUF    (((NUM_LANES / NUM_PES) > 2) ? 1 : 0)
+        .OUT_BUF    (2)
     ) pe_serializer (
         .clk        (clk),
         .reset      (reset),
@@ -78,8 +78,8 @@ module VX_fpu_ncp import VX_fpu_pkg::*; #(
         .tag_in     ({mask_in, tag_in}),
         .ready_in   (ready_in),
         .pe_enable  (pe_enable),
-        .pe_data_in (pe_data_in),
-        .pe_data_out(pe_data_out),
+        .pe_data_out(pe_data_in),
+        .pe_data_in (pe_data_out),
         .valid_out  (valid_out),
         .data_out   (data_out),
         .tag_out    ({mask_out, tag_out}),
@@ -91,9 +91,10 @@ module VX_fpu_ncp import VX_fpu_pkg::*; #(
         assign fflags_out[i] = data_out[i][32 +: `FP_FLAGS_BITS];
     end
 
-    for (genvar i = 0; i < NUM_PES; ++i) begin
+    for (genvar i = 0; i < NUM_PES; ++i) begin : fncp_units
         VX_fncp_unit #(
-            .LATENCY (`LATENCY_FNCP)
+            .LATENCY (`LATENCY_FNCP),
+            .OUT_REG (1)
         ) fncp_unit (
             .clk        (clk),
             .reset      (reset),

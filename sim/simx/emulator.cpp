@@ -30,17 +30,6 @@
 
 using namespace vortex;
 
-Emulator::ipdom_entry_t::ipdom_entry_t(const ThreadMask &tmask, Word PC)
-  : tmask(tmask)
-  , PC(PC)
-  , fallthrough(false)
-{}
-
-Emulator::ipdom_entry_t::ipdom_entry_t(const ThreadMask &tmask)
-  : tmask(tmask)
-  , fallthrough(true)
-{}
-
 Emulator::warp_t::warp_t(const Arch& arch)
   : ireg_file(arch.num_threads(), std::vector<Word>(MAX_NUM_REGS))
   , freg_file(arch.num_threads(), std::vector<uint64_t>(MAX_NUM_REGS))
@@ -89,7 +78,7 @@ Emulator::Emulator(const Arch &arch, const DCRS &dcrs, Core* core)
     , raster_units_(core->raster_units())
     , tex_units_(core->tex_units())
     , om_units_(core->om_units())
-    , ipdom_size_((arch.num_threads()-1) * 2)
+    , ipdom_size_(arch.num_threads()-1)
     , raster_idx_(0)
     , tex_idx_(0)
     , om_idx_(0)
@@ -196,10 +185,8 @@ instr_trace_t* Emulator::step() {
   uint64_t uuid = 0;
 #endif
 
-  DPH(1, "Fetch: cid=" << core_->id() << ", wid=" << scheduled_warp << ", tmask=");
-  for (uint32_t i = 0, n = arch_.num_threads(); i < n; ++i)
-    DPN(1, warp.tmask.test(i));
-  DPN(1, ", PC=0x" << std::hex << warp.PC << " (#" << std::dec << uuid << ")" << std::endl);
+  DP(1, "Fetch: cid=" << core_->id() << ", wid=" << scheduled_warp << ", tmask=" << ThreadMaskOS(warp.tmask, arch_.num_threads())
+         << ", PC=0x" << std::hex << warp.PC << " (#" << std::dec << uuid << ")");
 
   // Fetch
   uint32_t instr_code = 0;
@@ -474,6 +461,8 @@ Word Emulator::get_csr(uint32_t addr, uint32_t tid, uint32_t wid) {
         CSR_READ_64(VX_CSR_MPM_MEM_READS, proc_perf.mem_reads);
         CSR_READ_64(VX_CSR_MPM_MEM_WRITES, proc_perf.mem_writes);
         CSR_READ_64(VX_CSR_MPM_MEM_LT, proc_perf.mem_latency);
+        CSR_READ_64(VX_CSR_MPM_MEM_BANK_CNTR, proc_perf.memsim.counter);
+        CSR_READ_64(VX_CSR_MPM_MEM_BANK_TICK, proc_perf.memsim.ticks);
 
         CSR_READ_64(VX_CSR_MPM_LMEM_READS, lmem_perf.reads);
         CSR_READ_64(VX_CSR_MPM_LMEM_WRITES, lmem_perf.writes);

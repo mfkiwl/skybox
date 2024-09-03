@@ -13,7 +13,7 @@
 
 `include "VX_define.vh"
 
-module VX_commit import VX_gpu_pkg::*, VX_trace_pkg::*; #(
+module VX_commit import VX_gpu_pkg::*; #(
     parameter `STRING INSTANCE_ID = ""
 ) (
     input wire              clk,
@@ -41,7 +41,7 @@ module VX_commit import VX_gpu_pkg::*, VX_trace_pkg::*; #(
     wire [`ISSUE_WIDTH-1:0][`NUM_THREADS-1:0] per_issue_commit_tmask;
     wire [`ISSUE_WIDTH-1:0] per_issue_commit_eop;
 
-    for (genvar i = 0; i < `ISSUE_WIDTH; ++i) begin
+    for (genvar i = 0; i < `ISSUE_WIDTH; ++i) begin : commit_arbs
 
         wire [`NUM_EX_UNITS-1:0]            valid_in;
         wire [`NUM_EX_UNITS-1:0][DATAW-1:0] data_in;
@@ -53,16 +53,14 @@ module VX_commit import VX_gpu_pkg::*, VX_trace_pkg::*; #(
             assign commit_if[j * `ISSUE_WIDTH + i].ready = ready_in[j];
         end
 
-        `RESET_RELAY (arb_reset, reset);
-
         VX_stream_arb #(
             .NUM_INPUTS (`NUM_EX_UNITS),
             .DATAW      (DATAW),
-            .ARBITER    ("R"),
+            .ARBITER    ("P"),
             .OUT_BUF    (1)
         ) commit_arb (
             .clk        (clk),
-            .reset      (arb_reset),
+            .reset      (reset),
             .valid_in   (valid_in),
             .ready_in   (ready_in),
             .data_in    (data_in),

@@ -107,8 +107,8 @@ module Vortex import VX_gpu_pkg::*; (
         .WRITEBACK      (`L3_WRITEBACK),
         .DIRTY_BYTES    (`L3_WRITEBACK),
         .UUID_WIDTH     (`UUID_WIDTH),
-        .CORE_OUT_BUF   (2),
-        .MEM_OUT_BUF    (2),
+        .CORE_OUT_BUF   (3),
+        .MEM_OUT_BUF    (3),
         .NC_ENABLE      (1),
         .PASSTHRU       (!`L3_ENABLED)
     ) l3cache (
@@ -130,7 +130,7 @@ module Vortex import VX_gpu_pkg::*; (
     assign mem_req_data  = mem_bus_if.req_data.data;
     assign mem_req_tag   = mem_bus_if.req_data.tag;
     assign mem_bus_if.req_ready = mem_req_ready;
-    `UNUSED_VAR (mem_bus_if.req_data.atype)
+    `UNUSED_VAR (mem_bus_if.req_data.flags)
 
     assign mem_bus_if.rsp_valid = mem_rsp_valid;
     assign mem_bus_if.rsp_data.data  = mem_rsp_data;

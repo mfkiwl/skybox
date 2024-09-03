@@ -75,7 +75,7 @@ module VX_cache_data #(
     wire [`CS_WORDS_PER_LINE-1:0][NUM_WAYS-1:0][`CS_WORD_WIDTH-1:0] line_rdata;
     wire [`LOG2UP(NUM_WAYS)-1:0] way_idx;
 
-    if (WRITEBACK) begin
+    if (WRITEBACK) begin : dirty_bytes
         if (DIRTY_BYTES) begin
             wire [NUM_WAYS-1:0][LINE_SIZE-1:0] bs_rdata;
             wire [NUM_WAYS-1:0][LINE_SIZE-1:0] bs_wdata;
@@ -140,7 +140,7 @@ module VX_cache_data #(
         assign line_wren  = fill;
     end
 
-    VX_onehot_encoder #(
+    VX_encoder #(
         .N (NUM_WAYS)
     ) way_enc (
         .data_in  (way_sel),
@@ -185,13 +185,13 @@ module VX_cache_data #(
             `TRACE(3, ("%d: %s fill: addr=0x%0h, way=%b, blk_addr=%0d, data=0x%h\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(line_addr, BANK_ID), way_sel, line_sel, fill_data));
         end
         if (flush && ~stall) begin
-            `TRACE(3, ("%d: %s flush: addr=0x%0h, way=%b, blk_addr=%0d, byteen=%h, data=0x%h\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(line_addr, BANK_ID), way_sel, line_sel, dirty_byteen, dirty_data));
+            `TRACE(3, ("%d: %s flush: addr=0x%0h, way=%b, blk_addr=%0d, byteen=0x%h, data=0x%h\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(line_addr, BANK_ID), way_sel, line_sel, dirty_byteen, dirty_data));
         end
         if (read && ~stall) begin
             `TRACE(3, ("%d: %s read: addr=0x%0h, way=%b, blk_addr=%0d, wsel=%0d, data=0x%h (#%0d)\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(line_addr, BANK_ID), way_sel, line_sel, wsel, read_data, req_uuid));
         end
         if (write && ~stall) begin
-            `TRACE(3, ("%d: %s write: addr=0x%0h, way=%b, blk_addr=%0d, wsel=%0d, byteen=%h, data=0x%h (#%0d)\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(line_addr, BANK_ID), way_sel, line_sel, wsel, write_byteen[wsel], write_data[wsel], req_uuid));
+            `TRACE(3, ("%d: %s write: addr=0x%0h, way=%b, blk_addr=%0d, wsel=%0d, byteen=0x%h, data=0x%h (#%0d)\n", $time, INSTANCE_ID, `CS_LINE_TO_FULL_ADDR(line_addr, BANK_ID), way_sel, line_sel, wsel, write_byteen[wsel], write_data[wsel], req_uuid));
         end
     end
 `endif

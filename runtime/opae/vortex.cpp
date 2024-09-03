@@ -206,7 +206,6 @@ public:
 
   int get_caps(uint32_t caps_id, uint64_t * value) {
     uint64_t _value;
-
     switch (caps_id) {
     case VX_CAPS_VERSION:
       _value = (dev_caps_ >> 0) & 0xff;
@@ -227,10 +226,13 @@ public:
       _value = global_mem_size_;
       break;
     case VX_CAPS_LOCAL_MEM_SIZE:
-      _value = 1ull << ((dev_caps_ >> 48) & 0xff);
+      _value = 1ull << ((dev_caps_ >> 40) & 0xff);
       break;
     case VX_CAPS_ISA_FLAGS:
       _value = isa_caps_;
+      break;
+    case VX_CAPS_NUM_MEM_BANKS:
+      _value = MEMORY_BANKS;
       break;
     default:
       fprintf(stderr, "[VXDRV] Error: invalid caps id: %d\n", caps_id);
