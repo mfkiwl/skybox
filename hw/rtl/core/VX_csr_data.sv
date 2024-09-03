@@ -304,15 +304,15 @@ import VX_fpu_pkg::*;
                     `VX_DCR_MPM_CLASS_TEX: begin
                     `ifdef EXT_TEX_ENABLE
                         case (read_addr)
-                        `CSR_READ_64(`VX_CSR_MPM_TEX_READS, read_data_ro_r, perf_tex_if.mem_reads);
-                        `CSR_READ_64(`VX_CSR_MPM_TEX_LAT, read_data_ro_r, perf_tex_if.mem_latency);
-                        `CSR_READ_64(`VX_CSR_MPM_TEX_ST, read_data_ro_r, perf_tex_if.stall_cycles);
+                        `CSR_READ_64(`VX_CSR_MPM_TEX_READS, read_data_ro_w, perf_tex_if.mem_reads);
+                        `CSR_READ_64(`VX_CSR_MPM_TEX_LAT, read_data_ro_w, perf_tex_if.mem_latency);
+                        `CSR_READ_64(`VX_CSR_MPM_TEX_ST, read_data_ro_w, perf_tex_if.stall_cycles);
                     `ifdef TCACHE_ENABLE
                         // cache perf counters
-                        `CSR_READ_64(`VX_CSR_MPM_TCACHE_READS, read_data_ro_r, mem_perf_if.tcache.reads);
-                        `CSR_READ_64(`VX_CSR_MPM_TCACHE_MISS_R, read_data_ro_r, mem_perf_if.tcache.read_misses);
-                        `CSR_READ_64(`VX_CSR_MPM_TCACHE_BANK_ST, read_data_ro_r, mem_perf_if.tcache.bank_stalls);
-                        `CSR_READ_64(`VX_CSR_MPM_TCACHE_MSHR_ST, read_data_ro_r, mem_perf_if.tcache.mshr_stalls);
+                        `CSR_READ_64(`VX_CSR_MPM_TCACHE_READS, read_data_ro_w, mem_perf_if.tcache.reads);
+                        `CSR_READ_64(`VX_CSR_MPM_TCACHE_MISS_R, read_data_ro_w, mem_perf_if.tcache.read_misses);
+                        `CSR_READ_64(`VX_CSR_MPM_TCACHE_BANK_ST, read_data_ro_w, mem_perf_if.tcache.bank_stalls);
+                        `CSR_READ_64(`VX_CSR_MPM_TCACHE_MSHR_ST, read_data_ro_w, mem_perf_if.tcache.mshr_stalls);
                     `endif
                         default:;
                         endcase
@@ -321,15 +321,15 @@ import VX_fpu_pkg::*;
                     `VX_DCR_MPM_CLASS_RASTER: begin
                     `ifdef EXT_RASTER_ENABLE
                         case (read_addr)
-                        `CSR_READ_64(`VX_CSR_MPM_RASTER_READS, read_data_ro_r, perf_raster_if.mem_reads);
-                        `CSR_READ_64(`VX_CSR_MPM_RASTER_LAT, read_data_ro_r, perf_raster_if.mem_latency);
-                        `CSR_READ_64(`VX_CSR_MPM_RASTER_ST, read_data_ro_r, perf_raster_if.stall_cycles);
+                        `CSR_READ_64(`VX_CSR_MPM_RASTER_READS, read_data_ro_w, perf_raster_if.mem_reads);
+                        `CSR_READ_64(`VX_CSR_MPM_RASTER_LAT, read_data_ro_w, perf_raster_if.mem_latency);
+                        `CSR_READ_64(`VX_CSR_MPM_RASTER_ST, read_data_ro_w, perf_raster_if.stall_cycles);
                     `ifdef RCACHE_ENABLE
                         // cache perf counters
-                        `CSR_READ_64(`VX_CSR_MPM_RCACHE_READS, read_data_ro_r, mem_perf_if.rcache.reads);
-                        `CSR_READ_64(`VX_CSR_MPM_RCACHE_MISS_R, read_data_ro_r, mem_perf_if.rcache.read_misses);
-                        `CSR_READ_64(`VX_CSR_MPM_RCACHE_BANK_ST, read_data_ro_r, mem_perf_if.rcache.bank_stalls);
-                        `CSR_READ_64(`VX_CSR_MPM_RCACHE_MSHR_ST, read_data_ro_r, mem_perf_if.rcache.mshr_stalls);
+                        `CSR_READ_64(`VX_CSR_MPM_RCACHE_READS, read_data_ro_w, mem_perf_if.rcache.reads);
+                        `CSR_READ_64(`VX_CSR_MPM_RCACHE_MISS_R, read_data_ro_w, mem_perf_if.rcache.read_misses);
+                        `CSR_READ_64(`VX_CSR_MPM_RCACHE_BANK_ST, read_data_ro_w, mem_perf_if.rcache.bank_stalls);
+                        `CSR_READ_64(`VX_CSR_MPM_RCACHE_MSHR_ST, read_data_ro_w, mem_perf_if.rcache.mshr_stalls);
                     `endif
                         default:;
                         endcase
@@ -338,18 +338,18 @@ import VX_fpu_pkg::*;
                     `VX_DCR_MPM_CLASS_OM: begin
                     `ifdef EXT_OM_ENABLE
                         case (read_addr)
-                        `CSR_READ_64(`VX_CSR_MPM_OM_READS, read_data_ro_r, perf_om_if.mem_reads);
-                        `CSR_READ_64(`VX_CSR_MPM_OM_WRITES, read_data_ro_r, perf_om_if.mem_writes);
-                        `CSR_READ_64(`VX_CSR_MPM_OM_LAT, read_data_ro_r, perf_om_if.mem_latency);
-                        `CSR_READ_64(`VX_CSR_MPM_OM_ST, read_data_ro_r, perf_om_if.stall_cycles);
+                        `CSR_READ_64(`VX_CSR_MPM_OM_READS, read_data_ro_w, perf_om_if.mem_reads);
+                        `CSR_READ_64(`VX_CSR_MPM_OM_WRITES, read_data_ro_w, perf_om_if.mem_writes);
+                        `CSR_READ_64(`VX_CSR_MPM_OM_LAT, read_data_ro_w, perf_om_if.mem_latency);
+                        `CSR_READ_64(`VX_CSR_MPM_OM_ST, read_data_ro_w, perf_om_if.stall_cycles);
                     `ifdef OCACHE_ENABLE
                         // cache perf counters
-                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_READS, read_data_ro_r, mem_perf_if.ocache.reads);
-                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_WRITES, read_data_ro_r, mem_perf_if.ocache.writes);
-                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_MISS_R, read_data_ro_r, mem_perf_if.ocache.read_misses);
-                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_MISS_W, read_data_ro_r, mem_perf_if.ocache.write_misses);
-                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_BANK_ST, read_data_ro_r, mem_perf_if.ocache.bank_stalls);
-                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_MSHR_ST, read_data_ro_r, mem_perf_if.ocache.mshr_stalls);
+                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_READS, read_data_ro_w, mem_perf_if.ocache.reads);
+                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_WRITES, read_data_ro_w, mem_perf_if.ocache.writes);
+                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_MISS_R, read_data_ro_w, mem_perf_if.ocache.read_misses);
+                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_MISS_W, read_data_ro_w, mem_perf_if.ocache.write_misses);
+                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_BANK_ST, read_data_ro_w, mem_perf_if.ocache.bank_stalls);
+                        `CSR_READ_64(`VX_CSR_MPM_OCACHE_MSHR_ST, read_data_ro_w, mem_perf_if.ocache.mshr_stalls);
                     `endif
                         default:;
                         endcase
