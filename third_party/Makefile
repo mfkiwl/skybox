@@ -1,6 +1,6 @@
-all: fpnew cocogfx softfloat ramulator
+all: cvfpu cocogfx softfloat ramulator
 
-fpnew:
+cvfpu:
 
 cocogfx:
 	$(MAKE) -C cocogfx
@@ -17,4 +17,4 @@ clean:
 	$(MAKE) -C softfloat/build/Linux-x86_64-GCC clean
 	rm -rf ramulator/build ramulator/libramulator.so
 
-.PHONY: all fpnew cocogfx softfloat ramulator
+.PHONY: all cvfpu cocogfx softfloat ramulator
