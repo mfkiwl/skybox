@@ -285,8 +285,6 @@ module VX_raster_mem import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
         .TAG_WIDTH (RCACHE_TAG_WIDTH)
     ) mem_bus_if();
 
-    `RESET_RELAY (scheduler_reset, reset);
-
     VX_mem_scheduler #(
         .INSTANCE_ID  ($sformatf("%s-memsched", INSTANCE_ID)),
         .CORE_REQS    (NUM_REQS),
@@ -301,7 +299,7 @@ module VX_raster_mem import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
         .CORE_OUT_BUF (2)
     ) mem_scheduler (
         .clk            (clk),
-        .reset          (scheduler_reset),
+        .reset          (reset),
 
         // Input request
         .core_req_valid (mem_req_valid_qual),

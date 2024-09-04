@@ -200,8 +200,6 @@ module VX_om_mem import VX_gpu_pkg::*; import VX_om_pkg::*; #(
         .TAG_WIDTH (OCACHE_TAG_WIDTH)
     ) mem_bus_if();
 
-    `RESET_RELAY (scheduler_reset, reset);
-
     VX_mem_scheduler #(
         .INSTANCE_ID  ($sformatf("%s-memsched", INSTANCE_ID)),
         .CORE_REQS    (NUM_REQS),
@@ -217,7 +215,7 @@ module VX_om_mem import VX_gpu_pkg::*; import VX_om_pkg::*; #(
         .CORE_OUT_BUF (2)
     ) mem_scheduler (
         .clk            (clk),
-        .reset          (scheduler_reset),
+        .reset          (reset),
 
         // Input request
         .core_req_valid (mreq_valid_r),

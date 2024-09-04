@@ -75,15 +75,13 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     wire                                    mem_rsp_ready;
     wire                                    mem_write_notify;
 
-    `RESET_RELAY (mem_reset, reset);
-
     VX_om_mem #(
         .INSTANCE_ID ($sformatf("%s-mem", INSTANCE_ID)),
         .NUM_LANES   (NUM_LANES),
         .TAG_WIDTH   (MEM_TAG_WIDTH)
     ) om_mem (
         .clk            (clk),
-        .reset          (mem_reset),
+        .reset          (reset),
 
         .dcrs           (om_dcrs),
 
@@ -129,9 +127,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
 
     wire [NUM_LANES-1:0][`VX_OM_DEPTH_BITS-1:0]    ds_depth_out;
     wire [NUM_LANES-1:0][`VX_OM_STENCIL_BITS-1:0]  ds_stencil_out;
-    wire [NUM_LANES-1:0]                            ds_pass_out;
-
-    `RESET_RELAY (ds_reset, reset);
+    wire [NUM_LANES-1:0]                           ds_pass_out;
 
     VX_om_ds #(
         .INSTANCE_ID ($sformatf("%s-ds", INSTANCE_ID)),
@@ -139,7 +135,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
         .TAG_WIDTH   (DS_TAG_WIDTH)
     ) om_ds (
         .clk            (clk),
-        .reset          (ds_reset),
+        .reset          (reset),
 
         .dcrs           (om_dcrs),
 
@@ -174,15 +170,13 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     rgba_t [NUM_LANES-1:0]  blend_dst_color;
     rgba_t [NUM_LANES-1:0]  blend_color_out;
 
-    `RESET_RELAY (blend_reset, reset);
-
     VX_om_blend #(
         .INSTANCE_ID ($sformatf("%s-blend", INSTANCE_ID)),
         .NUM_LANES   (NUM_LANES),
         .TAG_WIDTH   (BLEND_TAG_WIDTH)
     ) om_blend (
         .clk            (clk),
-        .reset          (blend_reset),
+        .reset          (reset),
 
         .dcrs           (om_dcrs),
 

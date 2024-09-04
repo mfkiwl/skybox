@@ -100,15 +100,13 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     wire [(TAG_WIDTH + `TEX_FORMAT_BITS)-1:0] mem_req_info;
     wire mem_req_ready;
 
-    `RESET_RELAY (addr_reset, reset);
-
     VX_tex_addr #(
         .INSTANCE_ID ($sformatf("%s-addr", INSTANCE_ID)),
         .REQ_INFOW   (TAG_WIDTH + `TEX_FORMAT_BITS),
         .NUM_LANES   (NUM_LANES)
     ) tex_addr (
         .clk        (clk),
-        .reset      (addr_reset),
+        .reset      (reset),
 
         // inputs
         .req_valid  (req_valid),
@@ -143,15 +141,13 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     wire [(TAG_WIDTH + `TEX_FORMAT_BITS + BLEND_FRAC_W)-1:0] mem_rsp_info;
     wire mem_rsp_ready;
 
-    `RESET_RELAY (mem_reset, reset);
-
     VX_tex_mem #(
         .INSTANCE_ID ($sformatf("%s-mem", INSTANCE_ID)),
         .REQ_INFOW   (TAG_WIDTH + `TEX_FORMAT_BITS + BLEND_FRAC_W),
         .NUM_LANES   (NUM_LANES)
     ) tex_mem (
         .clk       (clk),
-        .reset     (mem_reset),
+        .reset     (reset),
 
         // memory interface
         .cache_bus_if (cache_bus_if),
@@ -180,15 +176,13 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     wire [TAG_WIDTH-1:0] sampler_rsp_info;
     wire sampler_rsp_ready;
 
-    `RESET_RELAY (sample_reset, reset);
-
     VX_tex_sampler #(
         .INSTANCE_ID ($sformatf("%s-sampler", INSTANCE_ID)),
         .REQ_INFOW   (TAG_WIDTH),
         .NUM_LANES   (NUM_LANES)
     ) tex_sampler (
         .clk        (clk),
-        .reset      (sample_reset),
+        .reset      (reset),
 
         // inputs
         .req_valid  (mem_rsp_valid),

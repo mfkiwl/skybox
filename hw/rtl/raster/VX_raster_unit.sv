@@ -109,8 +109,6 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
         running <= ~reset;
     end
 
-    `RESET_RELAY (mem_reset, reset);
-
     // Memory unit
     VX_raster_mem #(
         .INSTANCE_ID   ($sformatf("%s-mem", INSTANCE_ID)),
@@ -120,7 +118,7 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
         .QUEUE_SIZE    (MEM_FIFO_DEPTH)
     ) raster_mem (
         .clk          (clk),
-        .reset        (mem_reset),
+        .reset        (reset),
 
         .start        (mem_unit_start),
         .busy         (mem_unit_busy),
@@ -265,8 +263,6 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
         assign {slice_xloc_in, slice_yloc_in, slice_pid_in, slice_edges_in, slice_extents_in} = slice_arb_data_out[slice_id];
         assign slice_arb_ready_out[slice_id] = slice_ready_in;
 
-        `RESET_RELAY (slice_reset, reset);
-
         VX_raster_slice #(
             .INSTANCE_ID     ($sformatf("%s-slice%d", INSTANCE_ID, slice_id)),
             .TILE_LOGSIZE    (TILE_LOGSIZE),
@@ -275,7 +271,7 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
             .QUAD_FIFO_DEPTH (QUAD_FIFO_DEPTH)
         ) raster_slice (
             .clk        (clk),
-            .reset      (slice_reset),
+            .reset      (reset),
 
             .dcrs       (raster_dcrs),
 

@@ -129,14 +129,12 @@ module VX_sfu_unit import VX_gpu_pkg::*; #(
         .commit_in_if (pe_commit_if)
     );
 
-    `RESET_RELAY (wctl_reset, reset);
-
     VX_wctl_unit #(
         .INSTANCE_ID ($sformatf("%s-wctl", INSTANCE_ID)),
         .NUM_LANES (NUM_LANES)
     ) wctl_unit (
         .clk        (clk),
-        .reset      (wctl_reset),
+        .reset      (reset),
         .execute_if (pe_execute_if[PE_IDX_WCTL]),
         .warp_ctl_if(warp_ctl_if),
         .commit_if  (pe_commit_if[PE_IDX_WCTL])
@@ -154,15 +152,13 @@ module VX_sfu_unit import VX_gpu_pkg::*; #(
     VX_sfu_csr_if om_csr_if();
 `endif
 
-    `RESET_RELAY (csr_reset, reset);
-
     VX_csr_unit #(
         .INSTANCE_ID ($sformatf("%s-csr", INSTANCE_ID)),
         .CORE_ID   (CORE_ID),
         .NUM_LANES (NUM_LANES)
     ) csr_unit (
         .clk            (clk),
-        .reset          (csr_reset),
+        .reset          (reset),
 
         .base_dcrs      (base_dcrs),
 
@@ -204,14 +200,12 @@ module VX_sfu_unit import VX_gpu_pkg::*; #(
 
 `ifdef EXT_TEX_ENABLE
 
-    `RESET_RELAY (tex_reset, reset);
-
     VX_tex_agent #(
         .CORE_ID   (CORE_ID),
         .NUM_LANES (NUM_LANES)
     ) tex_agent (
         .clk        (clk),
-        .reset      (tex_reset),
+        .reset      (reset),
         .execute_if (pe_execute_if[PE_IDX_TEX]),
         .tex_csr_if (tex_csr_if),
         .tex_bus_if (tex_bus_if),
@@ -222,14 +216,12 @@ module VX_sfu_unit import VX_gpu_pkg::*; #(
 
 `ifdef EXT_RASTER_ENABLE
 
-    `RESET_RELAY (raster_reset, reset);
-
     VX_raster_agent #(
         .CORE_ID   (CORE_ID),
         .NUM_LANES (NUM_LANES)
     ) raster_agent (
         .clk        (clk),
-        .reset      (raster_reset),
+        .reset      (reset),
         .execute_if (pe_execute_if[PE_IDX_RASTER]),
         .raster_csr_if(raster_csr_if),
         .raster_bus_if(raster_bus_if),
@@ -240,14 +232,12 @@ module VX_sfu_unit import VX_gpu_pkg::*; #(
 
 `ifdef EXT_OM_ENABLE
 
-    `RESET_RELAY (om_reset, reset);
-
     VX_om_agent #(
         .CORE_ID   (CORE_ID),
         .NUM_LANES (NUM_LANES)
     ) om_agent (
         .clk        (clk),
-        .reset      (om_reset),
+        .reset      (reset),
         .execute_if (pe_execute_if[PE_IDX_OM]),
         .om_csr_if  (om_csr_if),
         .om_bus_if  (om_bus_if),
