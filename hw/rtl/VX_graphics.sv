@@ -106,8 +106,6 @@ module VX_graphics import VX_gpu_pkg::*; #(
         );
     end
 
-    `RESET_RELAY (raster_arb_reset, reset);
-
     VX_raster_arb #(
         .NUM_INPUTS  (`NUM_RASTER_UNITS),
         .NUM_LANES   (`NUM_SFU_LANES),
@@ -116,7 +114,7 @@ module VX_graphics import VX_gpu_pkg::*; #(
         .OUT_BUF     ((`NUM_SOCKETS != `NUM_RASTER_UNITS) ? 2 : 0)
     ) raster_arb (
         .clk        (clk),
-        .reset      (raster_arb_reset),
+        .reset      (reset),
         .bus_in_if  (raster_bus_if),
         .bus_out_if (per_socket_raster_bus_if)
     );
@@ -180,8 +178,6 @@ module VX_graphics import VX_gpu_pkg::*; #(
         .TAG_WIDTH (`TEX_REQ_ARB2_TAG_WIDTH)
     ) tex_bus_if[`NUM_TEX_UNITS]();
 
-    `RESET_RELAY (tex_arb_reset, reset);
-
     VX_tex_arb #(
         .NUM_INPUTS   (`NUM_SOCKETS),
         .NUM_LANES    (`NUM_SFU_LANES),
@@ -191,7 +187,7 @@ module VX_graphics import VX_gpu_pkg::*; #(
         .OUT_BUF_REQ  ((`NUM_SOCKETS != `NUM_TEX_UNITS) ? 2 : 0)
     ) tex_arb (
         .clk        (clk),
-        .reset      (tex_arb_reset),
+        .reset      (reset),
         .bus_in_if  (per_socket_tex_bus_if),
         .bus_out_if (tex_bus_if)
     );
@@ -283,8 +279,6 @@ module VX_graphics import VX_gpu_pkg::*; #(
         .NUM_LANES (`NUM_SFU_LANES)
     ) om_bus_if[`NUM_OM_UNITS]();
 
-    `RESET_RELAY (om_arb_reset, reset);
-
     VX_om_arb #(
         .NUM_INPUTS  (`NUM_SOCKETS),
         .NUM_LANES   (`NUM_SFU_LANES),
@@ -293,7 +287,7 @@ module VX_graphics import VX_gpu_pkg::*; #(
         .OUT_BUF    ((`NUM_SOCKETS != `NUM_OM_UNITS) ? 2 : 0)
     ) om_arb (
         .clk        (clk),
-        .reset      (om_arb_reset),
+        .reset      (reset),
         .bus_in_if  (per_socket_om_bus_if),
         .bus_out_if (om_bus_if)
     );
