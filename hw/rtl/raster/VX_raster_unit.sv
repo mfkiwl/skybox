@@ -320,8 +320,8 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
 `ifdef DBG_SCOPE_RASTER
     if (INSTANCE_ID == "cluster0-raster0") begin
     `ifdef SCOPE
-        wire cache_req_fire = cache_bus_if.req_valid && cache_bus_if.req_ready;
-        wire cache_rsp_fire = cache_bus_if.rsp_valid && cache_bus_if.rsp_ready;
+        wire cache_req_fire = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
+        wire cache_rsp_fire = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
         wire raster_req_fire = raster_bus_if.req_valid && raster_bus_if.req_ready;
         VX_scope_tap #(
             .SCOPE_ID (4),
@@ -344,11 +344,11 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
                 raster_bus_if.req_data.done
             }),
             .probes({
-                cache_bus_if.rsp_data.data,
-                cache_bus_if.rsp_data.tag,
-                cache_bus_if.req_data.tag,
-                cache_bus_if.req_data.addr,
-                cache_bus_if.req_data.rw,
+                cache_bus_if[0].rsp_data.data,
+                cache_bus_if[0].rsp_data.tag,
+                cache_bus_if[0].req_data.tag,
+                cache_bus_if[0].req_data.addr,
+                cache_bus_if[0].req_data.rw,
                 no_pending_tiledata
             }),
             .bus_in(scope_bus_in),
@@ -358,7 +358,7 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
     `ifdef CHIPSCOPE
         ila_raster ila_raster_inst (
             .clk    (clk),
-            .probe0 ({cache_bus_if.rsp_data.data, cache_bus_if.rsp_data.tag, cache_bus_if.rsp_ready, cache_bus_if.rsp_valid, cache_bus_if.req_data.tag, cache_bus_if.req_data.addr, cache_bus_if.req_data.rw, cache_bus_if.req_valid, cache_bus_if.req_ready}),
+            .probe0 ({cache_bus_if[0].rsp_data.data, cache_bus_if[0].rsp_data.tag, cache_bus_if[0].rsp_ready, cache_bus_if[0].rsp_valid, cache_bus_if[0].req_data.tag, cache_bus_if[0].req_data.addr, cache_bus_if[0].req_data.rw, cache_bus_if[0].req_valid, cache_bus_if[0].req_ready}),
             .probe1 ({no_pending_tiledata, mem_unit_busy, mem_unit_ready, mem_unit_start, mem_unit_valid, raster_bus_if.req_data.done, raster_bus_if.req_valid, raster_bus_if.req_ready})
         );
     `endif
@@ -494,18 +494,18 @@ module VX_raster_unit_top import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
         .TAG_WIDTH (RCACHE_TAG_WIDTH)
     ) cache_bus_if[RCACHE_NUM_REQS]();
 
-    assign cache_req_valid = cache_bus_if.req_valid;
-    assign cache_req_rw = cache_bus_if.req_data.rw;
-    assign cache_req_byteen = cache_bus_if.req_data.byteen;
-    assign cache_req_addr = cache_bus_if.req_data.addr;
-    assign cache_req_data = cache_bus_if.req_data.data;
-    assign cache_req_tag = cache_bus_if.req_data.tag;
-    assign cache_bus_if.req_ready = cache_req_ready;
+    assign cache_req_valid = cache_bus_if[0].req_valid;
+    assign cache_req_rw = cache_bus_if[0].req_data.rw;
+    assign cache_req_byteen = cache_bus_if[0].req_data.byteen;
+    assign cache_req_addr = cache_bus_if[0].req_data.addr;
+    assign cache_req_data = cache_bus_if[0].req_data.data;
+    assign cache_req_tag = cache_bus_if[0].req_data.tag;
+    assign cache_bus_if[0].req_ready = cache_req_ready;
 
-    assign cache_bus_if.rsp_valid = cache_rsp_valid;
-    assign cache_bus_if.rsp_data.tag = cache_rsp_tag;
-    assign cache_bus_if.rsp_data.data = cache_rsp_data;
-    assign cache_rsp_ready = cache_bus_if.rsp_ready;
+    assign cache_bus_if[0].rsp_valid = cache_rsp_valid;
+    assign cache_bus_if[0].rsp_data.tag = cache_rsp_tag;
+    assign cache_bus_if[0].rsp_data.data = cache_rsp_data;
+    assign cache_rsp_ready = cache_bus_if[0].rsp_ready;
 
 `ifdef SCOPE
     wire [0:0] scope_reset_w = 1'b0;

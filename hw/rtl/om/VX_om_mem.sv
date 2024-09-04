@@ -223,7 +223,7 @@ module VX_om_mem import VX_gpu_pkg::*; import VX_om_pkg::*; #(
         .core_req_mask  (mreq_mask_r),
         .core_req_byteen(mreq_byteen_r),
         .core_req_addr  (mreq_addr_r),
-        .core_req_flags ((NUM_REQS*`MEM_REQ_FLAGS_WIDTH)'(0)),
+        .core_req_flags ('0),
         .core_req_data  (mreq_data_r),
         .core_req_tag   (mreq_tag_r),
         `UNUSED_PIN (core_req_empty),

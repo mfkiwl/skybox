@@ -356,18 +356,18 @@ module VX_tex_unit_top import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
         .TAG_WIDTH (TCACHE_TAG_WIDTH)
     ) cache_bus_if[TCACHE_NUM_REQS]();
 
-    assign cache_req_valid = cache_bus_if.req_valid;
-    assign cache_req_rw = cache_bus_if.req_data.rw;
-    assign cache_req_byteen = cache_bus_if.req_data.byteen;
-    assign cache_req_addr = cache_bus_if.req_data.addr;
-    assign cache_req_data = cache_bus_if.req_data.data;
-    assign cache_req_tag = cache_bus_if.req_data.tag;
-    assign cache_bus_if.req_ready = cache_req_ready;
+    assign cache_req_valid = cache_bus_if[0].req_valid;
+    assign cache_req_rw = cache_bus_if[0].req_data.rw;
+    assign cache_req_byteen = cache_bus_if[0].req_data.byteen;
+    assign cache_req_addr = cache_bus_if[0].req_data.addr;
+    assign cache_req_data = cache_bus_if[0].req_data.data;
+    assign cache_req_tag = cache_bus_if[0].req_data.tag;
+    assign cache_bus_if[0].req_ready = cache_req_ready;
 
-    assign cache_bus_if.rsp_valid = cache_rsp_valid;
-    assign cache_bus_if.rsp_data.tag = cache_rsp_tag;
-    assign cache_bus_if.rsp_data.data = cache_rsp_data;
-    assign cache_rsp_ready = cache_bus_if.rsp_ready;
+    assign cache_bus_if[0].rsp_valid = cache_rsp_valid;
+    assign cache_bus_if[0].rsp_data.tag = cache_rsp_tag;
+    assign cache_bus_if[0].rsp_data.data = cache_rsp_data;
+    assign cache_rsp_ready = cache_bus_if[0].rsp_ready;
 
     VX_tex_unit #(
         .INSTANCE_ID (INSTANCE_ID),
