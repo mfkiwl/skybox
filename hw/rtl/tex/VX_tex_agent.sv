@@ -152,19 +152,18 @@ module VX_tex_agent import VX_tex_pkg::*; #(
 `ifdef DBG_TRACE_TEX
     always @(posedge clk) begin
         if (execute_if.valid && execute_if.ready) begin
-            `TRACE(1, ("%d: core%0d-tex-req: wid=%0d, PC=0x%0h, tmask=%b, u=", $time, CORE_ID, execute_if.data.wid, execute_if.data.PC, execute_if.data.tmask));
-            `TRACE_ARRAY1D(1, "0x%0h", sfu_exe_coords[0], NUM_LANES);
-            `TRACE(1, (", v="));
-            `TRACE_ARRAY1D(1, "0x%0h", sfu_exe_coords[1], NUM_LANES);
-            `TRACE(1, (", lod="));
-            `TRACE_ARRAY1D(1, "0x%0h", sfu_exe_lod, NUM_LANES);
-            `TRACE(1, (", stage=%0d, ibuf_idx=%0d (#%0d)\n", sfu_exe_stage, mdata_waddr, execute_if.data.uuid));
+            `TRACE(1, ("%d: core%0d-tex-req: wid=%0d, PC=0x%0h, tmask=%b, u=", $time, CORE_ID, execute_if.data.wid, execute_if.data.PC, execute_if.data.tmask))
+            `TRACE_ARRAY1D(1, "0x%0h", sfu_exe_coords[0], NUM_LANES)
+            `TRACE(1, (", v="))
+            `TRACE_ARRAY1D(1, "0x%0h", sfu_exe_coords[1], NUM_LANES)
+            `TRACE(1, (", lod="))
+            `TRACE_ARRAY1D(1, "0x%0h", sfu_exe_lod, NUM_LANES)
+            `TRACE(1, (", stage=%0d, ibuf_idx=%0d (#%0d)\n", sfu_exe_stage, mdata_waddr, execute_if.data.uuid))
         end
         if (tex_bus_if.rsp_valid && tex_bus_if.rsp_ready) begin
-            `TRACE(1, ("%d: core%0d-tex-rsp: wid=%0d, PC=0x%0h, tmask=%b, rd=%0d, texels=", $time, CORE_ID,
-                rsp_wid, rsp_PC, rsp_tmask, rsp_rd));
-            `TRACE_ARRAY1D(1, "0x%0h", tex_bus_if.rsp_data.texels, NUM_LANES);
-            `TRACE(1, (" ibuf_idx=%0d (#%0d)\n", mdata_raddr, rsp_uuid));
+            `TRACE(1, ("%d: core%0d-tex-rsp: wid=%0d, PC=0x%0h, tmask=%b, rd=%0d, texels=", $time, CORE_ID, rsp_wid, rsp_PC, rsp_tmask, rsp_rd))
+            `TRACE_ARRAY1D(1, "0x%0h", tex_bus_if.rsp_data.texels, NUM_LANES)
+            `TRACE(1, (" ibuf_idx=%0d (#%0d)\n", mdata_raddr, rsp_uuid))
         end
     end
 `endif

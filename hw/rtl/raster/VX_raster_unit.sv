@@ -425,7 +425,7 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
                     raster_bus_if.req_data.stamps[i].bcoords[0][0], raster_bus_if.req_data.stamps[i].bcoords[1][0], raster_bus_if.req_data.stamps[i].bcoords[2][0],
                     raster_bus_if.req_data.stamps[i].bcoords[0][1], raster_bus_if.req_data.stamps[i].bcoords[1][1], raster_bus_if.req_data.stamps[i].bcoords[2][1],
                     raster_bus_if.req_data.stamps[i].bcoords[0][2], raster_bus_if.req_data.stamps[i].bcoords[1][2], raster_bus_if.req_data.stamps[i].bcoords[2][2],
-                    raster_bus_if.req_data.stamps[i].bcoords[0][3], raster_bus_if.req_data.stamps[i].bcoords[1][3], raster_bus_if.req_data.stamps[i].bcoords[2][3]));
+                    raster_bus_if.req_data.stamps[i].bcoords[0][3], raster_bus_if.req_data.stamps[i].bcoords[1][3], raster_bus_if.req_data.stamps[i].bcoords[2][3]))
             end
         end
     end

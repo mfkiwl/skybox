@@ -223,7 +223,7 @@ module VX_raster_be import VX_raster_pkg::*; #(
                 $time, INSTANCE_ID, xloc_in, yloc_in, pid_in,
                 edges_in[0][0], edges_in[0][1], edges_in[0][2],
                 edges_in[1][0], edges_in[1][1], edges_in[1][2],
-                edges_in[2][0], edges_in[2][1], edges_in[2][2]));
+                edges_in[2][0], edges_in[2][1], edges_in[2][2]))
         end
 
         for (integer i = 0; i < OUTPUT_QUADS; ++i) begin
@@ -233,7 +233,7 @@ module VX_raster_be import VX_raster_pkg::*; #(
                     stamps_out[i].bcoords[0][0], stamps_out[i].bcoords[1][0], stamps_out[i].bcoords[2][0],
                     stamps_out[i].bcoords[0][1], stamps_out[i].bcoords[1][1], stamps_out[i].bcoords[2][1],
                     stamps_out[i].bcoords[0][2], stamps_out[i].bcoords[1][2], stamps_out[i].bcoords[2][2],
-                    stamps_out[i].bcoords[0][3], stamps_out[i].bcoords[1][3], stamps_out[i].bcoords[2][3]));
+                    stamps_out[i].bcoords[0][3], stamps_out[i].bcoords[1][3], stamps_out[i].bcoords[2][3]))
             end
         end
     end

@@ -115,20 +115,20 @@ module VX_raster_csr import VX_raster_pkg::*; #(
 
     always @(posedge clk) begin
         if (raster_csr_if.read_enable) begin
-            `TRACE(1, ("%d: core%0d-raster-csr-read: wid=%0d, tmask=%b, state=", $time, CORE_ID, raster_csr_if.read_wid, raster_csr_if.read_tmask));
-            `TRACE_RASTER_CSR(1, raster_csr_if.read_addr);
-            `TRACE(1, (", data="));
-            `TRACE_ARRAY1D(1, "0x%0h", raster_csr_if.read_data, NUM_LANES);
-            `TRACE(1, (" (#%0d)\n", raster_csr_if.read_uuid));
+            `TRACE(1, ("%d: core%0d-raster-csr-read: wid=%0d, tmask=%b, state=", $time, CORE_ID, raster_csr_if.read_wid, raster_csr_if.read_tmask))
+            `TRACE_RASTER_CSR(1, raster_csr_if.read_addr)
+            `TRACE(1, (", data="))
+            `TRACE_ARRAY1D(1, "0x%0h", raster_csr_if.read_data, NUM_LANES)
+            `TRACE(1, (" (#%0d)\n", raster_csr_if.read_uuid))
         end
         if (write_enable) begin
-            `TRACE(1, ("%d: core%0d-raster-fetch: wid=%0d, tmask=%b, pos_x=", $time, CORE_ID, write_wid, write_tmask));
-            `TRACE_ARRAY1D(1, "%0d", pos_x, NUM_LANES);
-            `TRACE(1, (", pos_y="));
-            `TRACE_ARRAY1D(1, "%0d", pos_y, NUM_LANES);
-            `TRACE(1, (", mask="));
-            `TRACE_ARRAY1D(1, "0x%0h", mask, NUM_LANES);
-            `TRACE(1, (" (#%0d)\n", write_uuid));
+            `TRACE(1, ("%d: core%0d-raster-fetch: wid=%0d, tmask=%b, pos_x=", $time, CORE_ID, write_wid, write_tmask))
+            `TRACE_ARRAY1D(1, "%0d", pos_x, NUM_LANES)
+            `TRACE(1, (", pos_y="))
+            `TRACE_ARRAY1D(1, "%0d", pos_y, NUM_LANES)
+            `TRACE(1, (", mask="))
+            `TRACE_ARRAY1D(1, "0x%0h", mask, NUM_LANES)
+            `TRACE(1, (" (#%0d)\n", write_uuid))
         end
     end
 `endif

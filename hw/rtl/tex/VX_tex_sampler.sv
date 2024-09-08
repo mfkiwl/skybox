@@ -148,18 +148,18 @@ module VX_tex_sampler #(
 `ifdef DBG_TRACE_TEX
     always @(posedge clk) begin
         if (req_valid && req_ready) begin
-            `TRACE(2, ("%d: %s-sampler-req: format=%0d, data=", $time, INSTANCE_ID, req_format));
-            `TRACE_ARRAY2D(2, "0x%0h", req_data, 4, NUM_LANES);
-            `TRACE(2, (", u0="));
-            `TRACE_ARRAY1D(2, "0x%0h", req_blends[0], NUM_LANES);
-            `TRACE(2, (", v0="));
-            `TRACE_ARRAY1D(2, "0x%0h", req_blends[1], NUM_LANES);
-            `TRACE(2, (" (#%0d)\n", req_info[REQ_INFOW-1 -: `UUID_WIDTH]));
+            `TRACE(2, ("%d: %s-sampler-req: format=%0d, data=", $time, INSTANCE_ID, req_format))
+            `TRACE_ARRAY2D(2, "0x%0h", req_data, 4, NUM_LANES)
+            `TRACE(2, (", u0="))
+            `TRACE_ARRAY1D(2, "0x%0h", req_blends[0], NUM_LANES)
+            `TRACE(2, (", v0="))
+            `TRACE_ARRAY1D(2, "0x%0h", req_blends[1], NUM_LANES)
+            `TRACE(2, (" (#%0d)\n", req_info[REQ_INFOW-1 -: `UUID_WIDTH]))
         end
         if (rsp_valid && rsp_ready) begin
-            `TRACE(2, ("%d: %s-sampler-rsp: data=", $time, INSTANCE_ID));
-            `TRACE_ARRAY1D(2, "0x%0h", rsp_data, NUM_LANES);
-            `TRACE(2, (" (#%0d)\n", rsp_info[REQ_INFOW-1 -: `UUID_WIDTH]));
+            `TRACE(2, ("%d: %s-sampler-rsp: data=", $time, INSTANCE_ID))
+            `TRACE_ARRAY1D(2, "0x%0h", rsp_data, NUM_LANES)
+            `TRACE(2, (" (#%0d)\n", rsp_info[REQ_INFOW-1 -: `UUID_WIDTH]))
         end
     end
 `endif

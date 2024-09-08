@@ -201,7 +201,7 @@ module VX_raster_te #(
 
     // pipeline stall
     wire fifo_stall = tile_valid_r && ~is_block_r && ~(& fifo_ready_in);
-    `RUNTIME_ASSERT(~fifo_stall, ("%t: *** tile evaluator fifo overflow", $time));
+    `RUNTIME_ASSERT(~fifo_stall, ("%t: *** tile evaluator fifo overflow", $time))
     assign stall = /*fifo_stall ||*/ output_stall;
 
     // can accept next input?
@@ -226,11 +226,11 @@ module VX_raster_te #(
                 edges_in[0][0], edges_in[0][1], edges_in[0][2],
                 edges_in[1][0], edges_in[1][1], edges_in[1][2],
                 edges_in[2][0], edges_in[2][1], edges_in[2][2],
-                extents_in[0],  extents_in[1],  extents_in[2]));
+                extents_in[0],  extents_in[1],  extents_in[2]))
         end
         if (tile_valid && ~stall) begin
             `TRACE(2, ("%d: %s-te-test: pass=%b, block=%b, level=%0d, x=%0d, y=%0d, edge_eval={0x%0h, 0x%0h, 0x%0h}\n",
-                $time, INSTANCE_ID, tile_valid_e, is_block, tile_level, tile_xloc, tile_yloc, edge_eval[0], edge_eval[1], edge_eval[2]));
+                $time, INSTANCE_ID, tile_valid_e, is_block, tile_level, tile_xloc, tile_yloc, edge_eval[0], edge_eval[1], edge_eval[2]))
         end
     end
 `endif

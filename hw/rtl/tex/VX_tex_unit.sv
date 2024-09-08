@@ -268,16 +268,16 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     always @(posedge clk) begin
         if (tex_bus_if.req_valid && tex_bus_if.req_ready) begin
             `TRACE(1, ("%d: %s-req: valid=%b, stage=%0d, lod=0x%0h, u=",
-                    $time, INSTANCE_ID, tex_bus_if.req_data.mask, tex_bus_if.req_data.stage, tex_bus_if.req_data.lod));
-            `TRACE_ARRAY1D(1, "0x%0h", tex_bus_if.req_data.coords[0], NUM_LANES);
-            `TRACE(1, (", v="));
-            `TRACE_ARRAY1D(1, "0x%0h", tex_bus_if.req_data.coords[1], NUM_LANES);
-            `TRACE(1, (", tag=0x%0h (#%0d)\n", tex_bus_if.req_data.tag, tex_bus_if.req_data.tag[TAG_WIDTH-1 -: `UUID_WIDTH]));
+                    $time, INSTANCE_ID, tex_bus_if.req_data.mask, tex_bus_if.req_data.stage, tex_bus_if.req_data.lod))
+            `TRACE_ARRAY1D(1, "0x%0h", tex_bus_if.req_data.coords[0], NUM_LANES)
+            `TRACE(1, (", v="))
+            `TRACE_ARRAY1D(1, "0x%0h", tex_bus_if.req_data.coords[1], NUM_LANES)
+            `TRACE(1, (", tag=0x%0h (#%0d)\n", tex_bus_if.req_data.tag, tex_bus_if.req_data.tag[TAG_WIDTH-1 -: `UUID_WIDTH]))
         end
         if (tex_bus_if.rsp_valid && tex_bus_if.rsp_ready) begin
-            `TRACE(1, ("%d: %s-rsp: texels=", $time, INSTANCE_ID));
-            `TRACE_ARRAY1D(1, "0x%0h", tex_bus_if.rsp_data.texels, NUM_LANES);
-            `TRACE(1, (", tag=0x%0h (#%0d)\n", tex_bus_if.rsp_data.tag, tex_bus_if.rsp_data.tag[TAG_WIDTH-1 -: `UUID_WIDTH]));
+            `TRACE(1, ("%d: %s-rsp: texels=", $time, INSTANCE_ID))
+            `TRACE_ARRAY1D(1, "0x%0h", tex_bus_if.rsp_data.texels, NUM_LANES)
+            `TRACE(1, (", tag=0x%0h (#%0d)\n", tex_bus_if.rsp_data.tag, tex_bus_if.rsp_data.tag[TAG_WIDTH-1 -: `UUID_WIDTH]))
         end
     end
 `endif

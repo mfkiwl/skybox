@@ -596,9 +596,9 @@ package VX_gpu_pkg;
                 `INST_SFU_CSRRW: begin if (op_args.csr.use_imm) `TRACE(level, ("CSRRWI")) else `TRACE(level, ("CSRRW")) end
                 `INST_SFU_CSRRS: begin if (op_args.csr.use_imm) `TRACE(level, ("CSRRSI")) else `TRACE(level, ("CSRRS")) end
                 `INST_SFU_CSRRC: begin if (op_args.csr.use_imm) `TRACE(level, ("CSRRCI")) else `TRACE(level, ("CSRRC")) end
-                `INST_SFU_TEX:   `TRACE(level, ("TEX"));
-                `INST_SFU_OM:    `TRACE(level, ("OM"));
-                `INST_SFU_RASTER:`TRACE(level, ("RASTER"));
+                `INST_SFU_TEX:   `TRACE(level, ("TEX"))
+                `INST_SFU_OM:    `TRACE(level, ("OM"))
+                `INST_SFU_RASTER:`TRACE(level, ("RASTER"))
                 default:         `TRACE(level, ("?"))
             endcase
         end

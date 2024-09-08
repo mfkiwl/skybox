@@ -171,39 +171,39 @@ module VX_tex_addr #(
 `ifdef DBG_TRACE_TEX
     always @(posedge clk) begin
         if (req_valid && ~stall_out) begin
-            `TRACE(2, ("%d: *** %s-addr: log_pitch=", $time, INSTANCE_ID));
-            `TRACE_ARRAY1D(2, "0x%0h", log_pitch, NUM_LANES);
-            `TRACE(2, (", mip_addr=0x"));
-            `TRACE_ARRAY1D(2, "0x%0h", mip_addr, NUM_LANES);
-            `TRACE(2, (", req_logdims="));
-            `TRACE_ARRAY1D(2, "0x%0h", req_logdims, 2);
-            `TRACE(2, (", clamped_lo="));
-            `TRACE_ARRAY2D(2, "0x%0h", clamped_lo, 2, NUM_LANES);
-            `TRACE(2, (", clamped_hi="));
-            `TRACE_ARRAY2D(2, "0x%0h", clamped_hi, 2, NUM_LANES);
-            `TRACE(2, ("\n"));
+            `TRACE(2, ("%d: *** %s-addr: log_pitch=", $time, INSTANCE_ID))
+            `TRACE_ARRAY1D(2, "0x%0h", log_pitch, NUM_LANES)
+            `TRACE(2, (", mip_addr=0x"))
+            `TRACE_ARRAY1D(2, "0x%0h", mip_addr, NUM_LANES)
+            `TRACE(2, (", req_logdims="))
+            `TRACE_ARRAY1D(2, "0x%0h", req_logdims, 2)
+            `TRACE(2, (", clamped_lo="))
+            `TRACE_ARRAY2D(2, "0x%0h", clamped_lo, 2, NUM_LANES)
+            `TRACE(2, (", clamped_hi="))
+            `TRACE_ARRAY2D(2, "0x%0h", clamped_hi, 2, NUM_LANES)
+            `TRACE(2, ("\n"))
         end
 
         if (valid_s0 && ~stall_out) begin
-            `TRACE(2, ("%d: *** %s-addr: scaled_lo=", $time, INSTANCE_ID));
-            `TRACE_ARRAY2D(2, "0x%0h", scaled_lo, 2, NUM_LANES);
-            `TRACE(2, (", scaled_hi="));
-            `TRACE_ARRAY2D(2, "0x%0h", scaled_hi, 2, NUM_LANES);
-            `TRACE(2, (", offset_u_lo="));
-            `TRACE_ARRAY1D(2, "0x%0h", offset_u_lo, NUM_LANES);
-            `TRACE(2, (", offset_u_hi="));
-            `TRACE_ARRAY1D(2, "0x%0h", offset_u_hi, NUM_LANES);
-            `TRACE(2, (", offset_v_lo="));
-            `TRACE_ARRAY1D(2, "0x%0h", offset_v_lo, NUM_LANES);
-            `TRACE(2, (", offset_v_hi="));
-            `TRACE_ARRAY1D(2, "0x%0h", offset_v_hi, NUM_LANES);
-            `TRACE(2, ("\n"));
+            `TRACE(2, ("%d: *** %s-addr: scaled_lo=", $time, INSTANCE_ID))
+            `TRACE_ARRAY2D(2, "0x%0h", scaled_lo, 2, NUM_LANES)
+            `TRACE(2, (", scaled_hi="))
+            `TRACE_ARRAY2D(2, "0x%0h", scaled_hi, 2, NUM_LANES)
+            `TRACE(2, (", offset_u_lo="))
+            `TRACE_ARRAY1D(2, "0x%0h", offset_u_lo, NUM_LANES)
+            `TRACE(2, (", offset_u_hi="))
+            `TRACE_ARRAY1D(2, "0x%0h", offset_u_hi, NUM_LANES)
+            `TRACE(2, (", offset_v_lo="))
+            `TRACE_ARRAY1D(2, "0x%0h", offset_v_lo, NUM_LANES)
+            `TRACE(2, (", offset_v_hi="))
+            `TRACE_ARRAY1D(2, "0x%0h", offset_v_hi, NUM_LANES)
+            `TRACE(2, ("\n"))
         end
 
         if (rsp_valid && rsp_ready) begin
-            `TRACE(2, ("%d: %s-addr: valid=%b, req_filter=%0d, lgstride=%0d, addr=", $time, INSTANCE_ID, rsp_mask, rsp_filter, rsp_lgstride));
-            `TRACE_ARRAY2D(2, "0x%0h", rsp_addr, 4, NUM_LANES);
-            `TRACE(2, (" (#%0d)\n", rsp_info[REQ_INFOW-1 -: `UUID_WIDTH]));
+            `TRACE(2, ("%d: %s-addr: valid=%b, req_filter=%0d, lgstride=%0d, addr=", $time, INSTANCE_ID, rsp_mask, rsp_filter, rsp_lgstride))
+            `TRACE_ARRAY2D(2, "0x%0h", rsp_addr, 4, NUM_LANES)
+            `TRACE(2, (" (#%0d)\n", rsp_info[REQ_INFOW-1 -: `UUID_WIDTH]))
         end
     end
 `endif

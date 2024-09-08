@@ -69,11 +69,11 @@ module VX_om_csr import VX_om_pkg::*; #(
 `ifdef DBG_TRACE_OM
     always @(posedge clk) begin
         if (om_csr_if.write_enable) begin
-            `TRACE(1, ("%d: core%0d-om-csr-write: wid=%0d, tmask=%b, state=", $time, CORE_ID, om_csr_if.write_wid, om_csr_if.write_tmask));
-            `TRACE_OM_CSR(1, om_csr_if.write_addr);
-            `TRACE(1, (", data="));
-            `TRACE_ARRAY1D(1, "0x%0h", om_csr_if.write_data, NUM_LANES);
-            `TRACE(1, (" (#%0d)\n", om_csr_if.write_uuid));
+            `TRACE(1, ("%d: core%0d-om-csr-write: wid=%0d, tmask=%b, state=", $time, CORE_ID, om_csr_if.write_wid, om_csr_if.write_tmask))
+            `TRACE_OM_CSR(1, om_csr_if.write_addr)
+            `TRACE(1, (", data="))
+            `TRACE_ARRAY1D(1, "0x%0h", om_csr_if.write_data, NUM_LANES)
+            `TRACE(1, (" (#%0d)\n", om_csr_if.write_uuid))
         end
     end
 `endif

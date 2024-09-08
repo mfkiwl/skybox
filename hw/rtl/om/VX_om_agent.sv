@@ -114,17 +114,17 @@ module VX_om_agent import VX_om_pkg::*; #(
 `ifdef DBG_TRACE_OMP
     always @(posedge clk) begin
         if (execute_if.valid && execute_if.ready) begin
-            `TRACE(1, ("%d: core%0d-om-req: wid=%0d, PC=0x%0h, tmask=%b, x=", $time, CORE_ID, execute_if.data.wid, execute_if.data.PC, execute_if.data.tmask));
-            `TRACE_ARRAY1D(1, sfu_exe_pos_x, NUM_LANES);
-            `TRACE(1, (", y="));
-            `TRACE_ARRAY1D(1, sfu_exe_pos_y, NUM_LANES);
-            `TRACE(1, (", face="));
-            `TRACE_ARRAY1D(1, sfu_exe_face, NUM_LANES);
-            `TRACE(1, (", color="));
-            `TRACE_ARRAY1D(1, sfu_exe_color, NUM_LANES);
-            `TRACE(1, (", depth="));
-            `TRACE_ARRAY1D(1, sfu_exe_depth, NUM_LANES);
-            `TRACE(1, (", face=%b (#%0d)\n", sfu_exe_face, execute_if.data.uuid));
+            `TRACE(1, ("%d: core%0d-om-req: wid=%0d, PC=0x%0h, tmask=%b, x=", $time, CORE_ID, execute_if.data.wid, execute_if.data.PC, execute_if.data.tmask))
+            `TRACE_ARRAY1D(1, sfu_exe_pos_x, NUM_LANES)
+            `TRACE(1, (", y="))
+            `TRACE_ARRAY1D(1, sfu_exe_pos_y, NUM_LANES)
+            `TRACE(1, (", face="))
+            `TRACE_ARRAY1D(1, sfu_exe_face, NUM_LANES)
+            `TRACE(1, (", color="))
+            `TRACE_ARRAY1D(1, sfu_exe_color, NUM_LANES)
+            `TRACE(1, (", depth="))
+            `TRACE_ARRAY1D(1, sfu_exe_depth, NUM_LANES)
+            `TRACE(1, (", face=%b (#%0d)\n", sfu_exe_face, execute_if.data.uuid))
         end
     end
 `endif

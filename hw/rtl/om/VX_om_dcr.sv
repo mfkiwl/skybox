@@ -1,12 +1,12 @@
 //!/bin/bash
 
 // Copyright © 2019-2023
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,7 +32,7 @@ module VX_om_dcr import VX_om_pkg::*; #(
 
 `define DEPTH_TEST_ENABLE(func, writemask) \
         ~((func == `VX_OM_DEPTH_FUNC_ALWAYS) && ~writemask)
-    
+
 `define STENCIL_TEST_ENABLE(func, zpass, zfail) \
          ~((func  == `VX_OM_DEPTH_FUNC_ALWAYS) \
         && (zpass == `VX_OM_STENCIL_OP_KEEP)   \
@@ -52,77 +52,77 @@ module VX_om_dcr import VX_om_pkg::*; #(
 
     always @(posedge clk) begin
         if (dcr_bus_if.write_valid) begin
-            case (dcr_bus_if.write_addr)                
-                `VX_DCR_OM_CBUF_ADDR: begin 
+            case (dcr_bus_if.write_addr)
+                `VX_DCR_OM_CBUF_ADDR: begin
                     dcrs.cbuf_addr <= dcr_bus_if.write_data[`OM_ADDR_BITS-1:0];
                 end
-                `VX_DCR_OM_CBUF_PITCH: begin 
+                `VX_DCR_OM_CBUF_PITCH: begin
                     dcrs.cbuf_pitch <= dcr_bus_if.write_data[`VX_OM_PITCH_BITS-1:0];
                 end
-                `VX_DCR_OM_CBUF_WRITEMASK: begin 
+                `VX_DCR_OM_CBUF_WRITEMASK: begin
                     dcrs.cbuf_writemask <= dcr_bus_if.write_data[3:0];
                 end
-                `VX_DCR_OM_ZBUF_ADDR: begin 
+                `VX_DCR_OM_ZBUF_ADDR: begin
                     dcrs.zbuf_addr <= dcr_bus_if.write_data[`OM_ADDR_BITS-1:0];
                 end
-                `VX_DCR_OM_ZBUF_PITCH: begin 
+                `VX_DCR_OM_ZBUF_PITCH: begin
                     dcrs.zbuf_pitch <= dcr_bus_if.write_data[`VX_OM_PITCH_BITS-1:0];
                 end
-                `VX_DCR_OM_DEPTH_FUNC: begin 
+                `VX_DCR_OM_DEPTH_FUNC: begin
                     dcrs.depth_func   <= dcr_bus_if.write_data[0 +: `VX_OM_DEPTH_FUNC_BITS];
                     dcrs.depth_enable <= `DEPTH_TEST_ENABLE(dcr_bus_if.write_data[0 +: `VX_OM_DEPTH_FUNC_BITS], dcrs.depth_writemask);
                 end
-                `VX_DCR_OM_DEPTH_WRITEMASK: begin 
+                `VX_DCR_OM_DEPTH_WRITEMASK: begin
                     dcrs.depth_writemask <= dcr_bus_if.write_data[0];
                     dcrs.depth_enable    <= `DEPTH_TEST_ENABLE(dcrs.depth_func, dcr_bus_if.write_data[0]);
                 end
-                `VX_DCR_OM_STENCIL_FUNC: begin 
+                `VX_DCR_OM_STENCIL_FUNC: begin
                     dcrs.stencil_func[0]   <= dcr_bus_if.write_data[0 +: `VX_OM_DEPTH_FUNC_BITS];
                     dcrs.stencil_func[1]   <= dcr_bus_if.write_data[16 +: `VX_OM_DEPTH_FUNC_BITS];
                     dcrs.stencil_enable[0] <= `STENCIL_TEST_ENABLE(dcr_bus_if.write_data[0 +: `VX_OM_DEPTH_FUNC_BITS], dcrs.stencil_zpass[0], dcrs.stencil_zfail[0]);
                     dcrs.stencil_enable[1] <= `STENCIL_TEST_ENABLE(dcr_bus_if.write_data[16 +: `VX_OM_DEPTH_FUNC_BITS], dcrs.stencil_zpass[1], dcrs.stencil_zfail[1]);
                 end
-                `VX_DCR_OM_STENCIL_ZPASS: begin 
+                `VX_DCR_OM_STENCIL_ZPASS: begin
                     dcrs.stencil_zpass[0]  <= dcr_bus_if.write_data[0 +: `VX_OM_STENCIL_OP_BITS];
                     dcrs.stencil_zpass[1]  <= dcr_bus_if.write_data[16 +: `VX_OM_STENCIL_OP_BITS];
                     dcrs.stencil_enable[0] <= `STENCIL_TEST_ENABLE(dcrs.stencil_func[0], dcr_bus_if.write_data[0 +: `VX_OM_STENCIL_OP_BITS], dcrs.stencil_zfail[0]);
                     dcrs.stencil_enable[1] <= `STENCIL_TEST_ENABLE(dcrs.stencil_func[1], dcr_bus_if.write_data[16 +: `VX_OM_STENCIL_OP_BITS], dcrs.stencil_zfail[1]);
                 end
-                `VX_DCR_OM_STENCIL_ZFAIL: begin 
+                `VX_DCR_OM_STENCIL_ZFAIL: begin
                     dcrs.stencil_zfail[0]  <= dcr_bus_if.write_data[0 +: `VX_OM_STENCIL_OP_BITS];
                     dcrs.stencil_zfail[1]  <= dcr_bus_if.write_data[16 +: `VX_OM_STENCIL_OP_BITS];
                     dcrs.stencil_enable[0] <= `STENCIL_TEST_ENABLE(dcrs.stencil_func[0], dcrs.stencil_zpass[0], dcr_bus_if.write_data[0 +: `VX_OM_STENCIL_OP_BITS]);
                     dcrs.stencil_enable[1] <= `STENCIL_TEST_ENABLE(dcrs.stencil_func[1], dcrs.stencil_zpass[1], dcr_bus_if.write_data[16 +: `VX_OM_STENCIL_OP_BITS]);
                 end
-                `VX_DCR_OM_STENCIL_FAIL: begin 
+                `VX_DCR_OM_STENCIL_FAIL: begin
                     dcrs.stencil_fail[0] <= dcr_bus_if.write_data[0 +: `VX_OM_STENCIL_OP_BITS];
                     dcrs.stencil_fail[1] <= dcr_bus_if.write_data[16 +: `VX_OM_STENCIL_OP_BITS];
-                end                
-                `VX_DCR_OM_STENCIL_REF: begin 
+                end
+                `VX_DCR_OM_STENCIL_REF: begin
                     dcrs.stencil_ref[0] <= dcr_bus_if.write_data[0 +: `VX_OM_STENCIL_BITS];
                     dcrs.stencil_ref[1] <= dcr_bus_if.write_data[16 +: `VX_OM_STENCIL_BITS];
                 end
-                `VX_DCR_OM_STENCIL_MASK: begin 
+                `VX_DCR_OM_STENCIL_MASK: begin
                     dcrs.stencil_mask[0] <= dcr_bus_if.write_data[0 +: `VX_OM_STENCIL_BITS];
                     dcrs.stencil_mask[1] <= dcr_bus_if.write_data[16 +: `VX_OM_STENCIL_BITS];
                 end
-                `VX_DCR_OM_STENCIL_WRITEMASK: begin 
+                `VX_DCR_OM_STENCIL_WRITEMASK: begin
                     dcrs.stencil_writemask[0] <= dcr_bus_if.write_data[0 +: `VX_OM_STENCIL_BITS];
                     dcrs.stencil_writemask[1] <= dcr_bus_if.write_data[16 +: `VX_OM_STENCIL_BITS];
                 end
-                `VX_DCR_OM_BLEND_MODE: begin 
+                `VX_DCR_OM_BLEND_MODE: begin
                     dcrs.blend_mode_rgb <= dcr_bus_if.write_data[0  +: `VX_OM_BLEND_MODE_BITS];
                     dcrs.blend_mode_a   <= dcr_bus_if.write_data[16 +: `VX_OM_BLEND_MODE_BITS];
                     dcrs.blend_enable   <= `BLEND_ENABLE(dcr_bus_if.write_data[0  +: `VX_OM_BLEND_MODE_BITS], dcr_bus_if.write_data[16 +: `VX_OM_BLEND_MODE_BITS], dcrs.blend_src_rgb, dcrs.blend_src_a, dcrs.blend_dst_rgb, dcrs.blend_dst_a);
                 end
-                `VX_DCR_OM_BLEND_FUNC: begin 
+                `VX_DCR_OM_BLEND_FUNC: begin
                     dcrs.blend_src_rgb <= dcr_bus_if.write_data[0  +: `VX_OM_BLEND_FUNC_BITS];
                     dcrs.blend_src_a   <= dcr_bus_if.write_data[8  +: `VX_OM_BLEND_FUNC_BITS];
                     dcrs.blend_dst_rgb <= dcr_bus_if.write_data[16 +: `VX_OM_BLEND_FUNC_BITS];
                     dcrs.blend_dst_a   <= dcr_bus_if.write_data[24 +: `VX_OM_BLEND_FUNC_BITS];
                     dcrs.blend_enable  <= `BLEND_ENABLE(dcrs.blend_mode_rgb, dcrs.blend_mode_a, dcr_bus_if.write_data[0 +: `VX_OM_BLEND_FUNC_BITS], dcr_bus_if.write_data[8 +: `VX_OM_BLEND_FUNC_BITS], dcr_bus_if.write_data[16 +: `VX_OM_BLEND_FUNC_BITS], dcr_bus_if.write_data[24 +: `VX_OM_BLEND_FUNC_BITS]);
                 end
-                `VX_DCR_OM_BLEND_CONST: begin 
+                `VX_DCR_OM_BLEND_CONST: begin
                     dcrs.blend_const <= dcr_bus_if.write_data[0 +: 32];
                 end
                 `VX_DCR_OM_LOGIC_OP: begin
@@ -138,9 +138,9 @@ module VX_om_dcr import VX_om_pkg::*; #(
 `ifdef DBG_TRACE_OM
     always @(posedge clk) begin
         if (dcr_bus_if.write_valid) begin
-            `TRACE(1, ("%d: %s-om-dcr: state=", $time, INSTANCE_ID));
-            `TRACE_OM_DCR(1, dcr_bus_if.write_addr);
-            `TRACE(1, (", data=0x%0h\n", dcr_bus_if.write_data));
+            `TRACE(1, ("%d: %s-om-dcr: state=", $time, INSTANCE_ID))
+            `TRACE_OM_DCR(1, dcr_bus_if.write_addr)
+            `TRACE(1, (", data=0x%0h\n", dcr_bus_if.write_data))
         end
     end
 `endif

@@ -68,11 +68,11 @@ module VX_tex_csr import VX_tex_pkg::*; #(
 `ifdef DBG_TRACE_TEX
     always @(posedge clk) begin
         if (tex_csr_if.write_enable) begin
-            `TRACE(1, ("%d: core%0d-tex-csr-write: wid=%0d, tmask=%b, state=", $time, CORE_ID, tex_csr_if.write_wid, tex_csr_if.write_tmask));
-            `TRACE_TEX_CSR(1, tex_csr_if.write_addr);
-            `TRACE(1, (", data="));
-            `TRACE_ARRAY1D(1, "0x%0h", tex_csr_if.write_data, NUM_LANES);
-            `TRACE(1, (" (#%0d)\n", tex_csr_if.write_uuid));
+            `TRACE(1, ("%d: core%0d-tex-csr-write: wid=%0d, tmask=%b, state=", $time, CORE_ID, tex_csr_if.write_wid, tex_csr_if.write_tmask))
+            `TRACE_TEX_CSR(1, tex_csr_if.write_addr)
+            `TRACE(1, (", data="))
+            `TRACE_ARRAY1D(1, "0x%0h", tex_csr_if.write_data, NUM_LANES)
+            `TRACE(1, (" (#%0d)\n", tex_csr_if.write_uuid))
         end
     end
 `endif

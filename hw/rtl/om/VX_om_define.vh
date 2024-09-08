@@ -26,32 +26,32 @@
 
 `define TRACE_OM_DCR(level, state) \
     case (state) \
-        `VX_DCR_OM_CBUF_ADDR:           `TRACE(level, ("CBUF_ADDR")); \
-        `VX_DCR_OM_CBUF_PITCH:          `TRACE(level, ("CBUF_PITCH")); \
-        `VX_DCR_OM_CBUF_WRITEMASK:      `TRACE(level, ("CBUF_WRITEMASK")); \
-        `VX_DCR_OM_ZBUF_ADDR:           `TRACE(level, ("ZBUF_ADDR")); \
-        `VX_DCR_OM_ZBUF_PITCH:          `TRACE(level, ("ZBUF_PITCH")); \
-        `VX_DCR_OM_DEPTH_FUNC:          `TRACE(level, ("DEPTH_FUNC")); \
-        `VX_DCR_OM_DEPTH_WRITEMASK:     `TRACE(level, ("DEPTH_WRITEMASK")); \
-        `VX_DCR_OM_STENCIL_FUNC:        `TRACE(level, ("STENCIL_FUNC")); \
-        `VX_DCR_OM_STENCIL_ZPASS:       `TRACE(level, ("STENCIL_ZPASS")); \
-        `VX_DCR_OM_STENCIL_ZFAIL:       `TRACE(level, ("STENCIL_ZFAIL")); \
-        `VX_DCR_OM_STENCIL_FAIL:        `TRACE(level, ("STENCIL_FAIL")); \
-        `VX_DCR_OM_STENCIL_REF:         `TRACE(level, ("STENCIL_REF")); \
-        `VX_DCR_OM_STENCIL_MASK:        `TRACE(level, ("STENCIL_MASK")); \
-        `VX_DCR_OM_STENCIL_WRITEMASK:   `TRACE(level, ("STENCIL_WRITEMASK")); \
-        `VX_DCR_OM_BLEND_MODE:          `TRACE(level, ("BLEND_MODE")); \
-        `VX_DCR_OM_BLEND_FUNC:          `TRACE(level, ("BLEND_FUNC")); \
-        `VX_DCR_OM_BLEND_CONST:         `TRACE(level, ("BLEND_CONST")); \
-        `VX_DCR_OM_LOGIC_OP:            `TRACE(level, ("LOGIC_OP")); \
-        default:                        `TRACE(level, ("?")); \
+        `VX_DCR_OM_CBUF_ADDR:           `TRACE(level, ("CBUF_ADDR")) \
+        `VX_DCR_OM_CBUF_PITCH:          `TRACE(level, ("CBUF_PITCH")) \
+        `VX_DCR_OM_CBUF_WRITEMASK:      `TRACE(level, ("CBUF_WRITEMASK")) \
+        `VX_DCR_OM_ZBUF_ADDR:           `TRACE(level, ("ZBUF_ADDR")) \
+        `VX_DCR_OM_ZBUF_PITCH:          `TRACE(level, ("ZBUF_PITCH")) \
+        `VX_DCR_OM_DEPTH_FUNC:          `TRACE(level, ("DEPTH_FUNC")) \
+        `VX_DCR_OM_DEPTH_WRITEMASK:     `TRACE(level, ("DEPTH_WRITEMASK")) \
+        `VX_DCR_OM_STENCIL_FUNC:        `TRACE(level, ("STENCIL_FUNC")) \
+        `VX_DCR_OM_STENCIL_ZPASS:       `TRACE(level, ("STENCIL_ZPASS")) \
+        `VX_DCR_OM_STENCIL_ZFAIL:       `TRACE(level, ("STENCIL_ZFAIL")) \
+        `VX_DCR_OM_STENCIL_FAIL:        `TRACE(level, ("STENCIL_FAIL")) \
+        `VX_DCR_OM_STENCIL_REF:         `TRACE(level, ("STENCIL_REF")) \
+        `VX_DCR_OM_STENCIL_MASK:        `TRACE(level, ("STENCIL_MASK")) \
+        `VX_DCR_OM_STENCIL_WRITEMASK:   `TRACE(level, ("STENCIL_WRITEMASK")) \
+        `VX_DCR_OM_BLEND_MODE:          `TRACE(level, ("BLEND_MODE")) \
+        `VX_DCR_OM_BLEND_FUNC:          `TRACE(level, ("BLEND_FUNC")) \
+        `VX_DCR_OM_BLEND_CONST:         `TRACE(level, ("BLEND_CONST")) \
+        `VX_DCR_OM_LOGIC_OP:            `TRACE(level, ("LOGIC_OP")) \
+        default:                        `TRACE(level, ("?")) \
     endcase
 
 `define TRACE_OM_CSR(level, addr) \
     case (addr) \
-        `VX_CSR_OM_RT_IDX:              `TRACE(level, ("RT_IDX")); \
-        `VX_CSR_OM_SAMPLE_IDX:          `TRACE(level, ("SAMPLE_IDX")); \
-        default:                        `TRACE(level, ("?")); \
+        `VX_CSR_OM_RT_IDX:              `TRACE(level, ("RT_IDX")) \
+        `VX_CSR_OM_SAMPLE_IDX:          `TRACE(level, ("SAMPLE_IDX")) \
+        default:                        `TRACE(level, ("?")) \
     endcase
 
 `define PERF_OM_ADD(dst, src, dcount, scount) \

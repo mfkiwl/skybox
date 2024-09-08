@@ -415,7 +415,7 @@ module VX_raster_mem import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
                 $time, INSTANCE_ID, xloc_out, yloc_out, pid_out,
                 edges_out[0][0], edges_out[0][1], edges_out[0][2],
                 edges_out[1][0], edges_out[1][1], edges_out[1][2],
-                edges_out[2][0], edges_out[2][1], edges_out[2][2]));
+                edges_out[2][0], edges_out[2][1], edges_out[2][2]))
         end
     end
 `endif
