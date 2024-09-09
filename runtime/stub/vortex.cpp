@@ -52,10 +52,30 @@ static int dcr_initialize(vx_device_h hdevice) {
 
   // initialize texture unit DCRs
   if ((isa_flags & VX_ISA_EXT_TEX) != 0) {
-    for (uint32_t state = VX_DCR_TEX_STATE_BEGIN; state < VX_DCR_TEX_STATE_END; ++state) {
-      CHECK_ERR(vx_dcr_write(hdevice, state, 0), {
+    for (uint32_t stage = 0; stage < VX_TEX_STAGE_COUNT; ++stage) {
+      CHECK_ERR(vx_dcr_write(hdevice, VX_DCR_TEX_STAGE, 0), {
         return err;
       });
+      CHECK_ERR(vx_dcr_write(hdevice, VX_DCR_TEX_LOGDIM, 0), {
+        return err;
+      });
+      CHECK_ERR(vx_dcr_write(hdevice, VX_DCR_TEX_FORMAT, 0), {
+        return err;
+      });
+      CHECK_ERR(vx_dcr_write(hdevice, VX_DCR_TEX_WRAP, 0), {
+        return err;
+      });
+      CHECK_ERR(vx_dcr_write(hdevice, VX_DCR_TEX_FILTER, 0), {
+        return err;
+      });
+      CHECK_ERR(vx_dcr_write(hdevice, VX_DCR_TEX_ADDR, 0), {
+        return err;
+      });
+      for (uint32_t m = 0; m < VX_TEX_LOD_MAX; ++m) {
+        CHECK_ERR(vx_dcr_write(hdevice, VX_DCR_TEX_MIPOFF(m), 0), {
+          return err;
+        });
+      };
     }
   }
 
