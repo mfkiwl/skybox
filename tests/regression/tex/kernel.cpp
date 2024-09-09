@@ -59,10 +59,10 @@ void kernel_body(kernel_arg_t* __UNIFORM__ arg) {
 	/*vx_printf("blockIdx.x=%d, tile_width=%d, tile_height=%d, deltaX=%f, deltaY=%f, minification=%f\n",
 	 	blockIdx.x, arg->tile_width, arg->tile_height, arg->deltaX, arg->deltaY, arg->minification);*/
 
-	auto fv = (y_start + 0.5f) * deltaY;
+	auto fv = (deltaY / 2) + deltaY * y_start;
 	for (uint32_t y = y_start; y < y_end; ++y) {
 		auto dst_row = reinterpret_cast<uint32_t*>(dst_ptr);
-		auto fu = (x_start + 0.5f) * deltaX;
+		auto fu = (deltaX / 2) + deltaX * x_start;
 		for (uint32_t x = x_start; x < x_end; ++x) {
 			uint32_t color;
 			cocogfx::TFixed<VX_TEX_FXD_FRAC> xu(fu);
@@ -106,17 +106,17 @@ int main() {
 	auto __UNIFORM__ arg = (kernel_arg_t*)csr_read(VX_CSR_MSCRATCH);
 
 	g_tileinfo.tile_height = (arg->dst_height + arg->num_tasks - 1) / arg->num_tasks;
-	g_tileinfo.deltaX      = 1.0f / arg->dst_width;
-	g_tileinfo.deltaY      = 1.0f / arg->dst_height;
+	g_tileinfo.deltaX      = FloatX(1) / arg->dst_width;
+	g_tileinfo.deltaY      = FloatX(1) / arg->dst_height;
 
 	{
 		auto tex_logdim    = arg->dcrs.read(0, VX_DCR_TEX_LOGDIM);
 		auto tex_logwidth  = tex_logdim & 0xffff;
   	auto tex_logheight = tex_logdim >> 16;
-		auto width_ratio   = float(1 << tex_logwidth) / arg->dst_width;
-		auto height_ratio  = float(1 << tex_logheight) / arg->dst_height;
+		auto width_ratio   = FloatR(1 << tex_logwidth) / arg->dst_width;
+		auto height_ratio  = FloatR(1 << tex_logheight) / arg->dst_height;
 		auto minification  = std::max(width_ratio, height_ratio);
-		auto j             = static_cast<fixed16_t>(std::max(minification, 1.0f));
+		auto j             = static_cast<fixed16_t>(std::max(minification, FloatR(1.0f)));
 		auto lod           = std::min<uint32_t>(log2floor(j.data()) - 16, VX_TEX_LOD_MAX);
 		auto frac          = (j.data() - (1 << (lod + 16))) >> (lod + 16 - 8);
 		g_tileinfo.lod     = lod;
