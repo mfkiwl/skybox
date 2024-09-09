@@ -45,6 +45,38 @@ static int dcr_initialize(vx_device_h hdevice) {
     return err;
   });
 
+  uint64_t isa_flags;
+  CHECK_ERR(vx_dev_caps(hdevice, VX_CAPS_ISA_FLAGS, &isa_flags), {
+    return err;
+  });
+
+  // initialize texture unit DCRs
+  if ((isa_flags & VX_ISA_EXT_TEX) != 0) {
+    for (uint32_t state = VX_DCR_TEX_STATE_BEGIN; state < VX_DCR_TEX_STATE_END; ++state) {
+      CHECK_ERR(vx_dcr_write(hdevice, state, 0), {
+        return err;
+      });
+    }
+  }
+
+  // initialize rasterizer DCRs
+  if ((isa_flags & VX_ISA_EXT_RASTER) != 0) {
+    for (uint32_t state = VX_DCR_RASTER_STATE_BEGIN; state < VX_DCR_RASTER_STATE_END; ++state) {
+      CHECK_ERR(vx_dcr_write(hdevice, state, 0), {
+        return err;
+      });
+    }
+  }
+
+  // initialize output merger DCRs
+  if ((isa_flags & VX_ISA_EXT_OM) != 0) {
+    for (uint32_t state = VX_DCR_OM_STATE_BEGIN; state < VX_DCR_OM_STATE_END; ++state) {
+      CHECK_ERR(vx_dcr_write(hdevice, state, 0), {
+        return err;
+      });
+    }
+  }
+
   return 0;
 }
 
