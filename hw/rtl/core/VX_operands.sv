@@ -134,14 +134,12 @@ module VX_operands import VX_gpu_pkg::*; #(
         end
     end
 
-    wire [NUM_SRC_OPDS-1:0] req_fire_in = req_valid_in & req_ready_in;
-
     always @(*) begin
         data_fetched_n = data_fetched_st1;
          if (scoreboard_if.ready) begin
             data_fetched_n = '0;
         end else begin
-            data_fetched_n = data_fetched_st1 | req_fire_in;
+            data_fetched_n = data_fetched_st1 | req_ready_in;
         end
     end
 
