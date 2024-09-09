@@ -31,7 +31,7 @@
 4. Build Vortex
 
    ```
-   $ cd vortex
+   $ cd skybox
    $ mkdir -p build
    $ cd build
    $ ../configure --xlen=32 --tooldir=$HOME/tools
@@ -71,7 +71,7 @@ Note: depending on the system, some of the toolchain may need to be recompiled f
 5. Build Vortex
 
    ```
-   $ cd vortex
+   $ cd skybox
    $ mkdir -p build
    $ cd build
    $ ../configure --xlen=32 --tooldir=$HOME/tools

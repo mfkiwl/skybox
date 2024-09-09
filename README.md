@@ -48,7 +48,7 @@ More detailed build instructions can be found [here](docs/install_vortex.md).
 ### Install Vortex codebase
 ```sh
 git clone --depth=1 --recursive https://github.com/vortexgpgpu/skybox.git
-cd vortex
+cd skybox
 ```
 ### Install system dependencies
 ```sh
