@@ -41,6 +41,7 @@
 
 `define TRACE_TEX_DCR(level, addr) \
     case (addr) \
+        `VX_DCR_TEX_STAGE:  `TRACE(level, ("STAGE")) \
         `VX_DCR_TEX_ADDR:   `TRACE(level, ("ADDR")) \
         `VX_DCR_TEX_LOGDIM: `TRACE(level, ("LOGDIM")) \
         `VX_DCR_TEX_FORMAT: `TRACE(level, ("FORMAT")) \

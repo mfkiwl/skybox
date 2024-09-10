@@ -90,7 +90,7 @@ module VX_tex_dcr import VX_tex_pkg::*; #(
 `ifdef DBG_TRACE_TEX
     always @(posedge clk) begin
         if (dcr_bus_if.write_valid) begin
-            `TRACE(1, ("%d: %s-tex-dcr: stage=%0d, state=", $time, INSTANCE_ID, dcr_stage))
+            `TRACE(1, ("%d: %s-tex-dcr: state=", $time, INSTANCE_ID))
             `TRACE_TEX_DCR(1, dcr_bus_if.write_addr)
             `TRACE(1, (", data=0x%0h\n", dcr_bus_if.write_data))
         end
