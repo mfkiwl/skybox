@@ -44,7 +44,7 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     input wire                          rsp_ready
 );
 
-    localparam TAG_WIDTH = REQ_INFOW + `TEX_LGSTRIDE_BITS + (NUM_LANES * 4 * 2) + 4;
+    localparam TAG_WIDTH = REQ_INFOW + `TEX_FILTER_BITS + `TEX_LGSTRIDE_BITS + (NUM_LANES * 4 * 2) + 4;
 
     wire                           mem_req_valid;
     wire [3:0][NUM_LANES-1:0]      mem_req_mask;
@@ -103,7 +103,7 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     // submit request to memory
 
     assign mem_req_valid = req_valid;
-    assign mem_req_tag   = {req_info, req_lgstride, mem_req_align, mem_req_dups};
+    assign mem_req_tag   = {req_info, req_filter, req_lgstride, mem_req_align, mem_req_dups};
     assign req_ready     = mem_req_ready;
 
     // schedule memory request
@@ -188,18 +188,22 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
 
     // handle memory response
 
-    wire [REQ_INFOW-1:0]          mem_rsp_info;
-    wire [`TEX_LGSTRIDE_BITS-1:0] mem_rsp_lgstride;
+    wire [REQ_INFOW-1:0]          rsp_info_s;
+    wire [`TEX_FILTER_BITS-1:0]   rsp_filter;
+    wire [`TEX_LGSTRIDE_BITS-1:0] rsp_lgstride;
     wire [3:0][NUM_LANES-1:0][1:0] mem_rsp_align;
     wire [3:0]                    mem_rsp_dups;
 
-    assign {mem_rsp_info, mem_rsp_lgstride, mem_rsp_align, mem_rsp_dups} = mem_rsp_tag;
+    assign {rsp_info_s, rsp_filter, rsp_lgstride, mem_rsp_align, mem_rsp_dups} = mem_rsp_tag;
 
     reg [NUM_LANES-1:0][3:0][31:0] mem_rsp_data_qual;
 
     for (genvar i = 0; i < NUM_LANES; ++i) begin
         for (genvar j = 0; j < 4; ++j) begin
-            wire [31:0] src_data = ((i == 0 || mem_rsp_dups[j]) ? mem_rsp_data[j][0] : mem_rsp_data[j][i]);
+            wire use_i0 = (i == 0 || mem_rsp_dups[j]);
+            wire use_j0 = (j == 0 || 0 == rsp_filter);
+            wire [31:0] src_data = (use_i0 && use_j0) ? mem_rsp_data[0][0] :
+                (use_i0 ? mem_rsp_data[j][0] : (use_j0 ? mem_rsp_data[0][i] : mem_rsp_data[j][i]));
 
             reg [31:0] rsp_data_shifted;
             always @(*) begin
@@ -209,7 +213,7 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
             end
 
             always @(*) begin
-                case (mem_rsp_lgstride)
+                case (rsp_lgstride)
                 0:       mem_rsp_data_qual[i][j] = 32'(rsp_data_shifted[7:0]);
                 1:       mem_rsp_data_qual[i][j] = 32'(rsp_data_shifted[15:0]);
                 2:       mem_rsp_data_qual[i][j] = rsp_data_shifted;
@@ -227,8 +231,8 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
         .reset     (reset),
         .valid_in  (mem_rsp_valid),
         .ready_in  (mem_rsp_ready),
-        .data_in   ({mem_rsp_info, mem_rsp_data_qual}),
-        .data_out  ({rsp_info,     rsp_data}),
+        .data_in   ({rsp_info_s, mem_rsp_data_qual}),
+        .data_out  ({rsp_info,   rsp_data}),
         .valid_out (rsp_valid),
         .ready_out (rsp_ready)
     );

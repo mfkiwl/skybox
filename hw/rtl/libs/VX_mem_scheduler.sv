@@ -13,7 +13,7 @@
 
 `include "VX_platform.vh"
 
-//`TRACING_OFF
+`TRACING_OFF
 module VX_mem_scheduler #(
     parameter `STRING INSTANCE_ID = "",
     parameter CORE_REQS     = 1,
@@ -460,7 +460,7 @@ module VX_mem_scheduler #(
 
     end else begin
 
-        reg [CORE_BATCHES*CORE_CHANNELS*WORD_WIDTH-1:0] rsp_store [CORE_QUEUE_SIZE-1:0];
+        reg [(CORE_BATCHES * CORE_CHANNELS * WORD_WIDTH)-1:0] rsp_store [CORE_QUEUE_SIZE-1:0];
         reg [CORE_BATCHES-1:00][CORE_CHANNELS-1:0][WORD_WIDTH-1:0] rsp_store_n;
         reg [CORE_REQS-1:0] rsp_orig_mask [CORE_QUEUE_SIZE-1:0];
 
@@ -623,4 +623,4 @@ module VX_mem_scheduler #(
 `endif
 
 endmodule
-//`TRACING_ON
+`TRACING_ON
