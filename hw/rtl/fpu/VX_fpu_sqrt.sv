@@ -99,7 +99,7 @@ module VX_fpu_sqrt import VX_fpu_pkg::*; #(
     for (genvar i = 0; i < NUM_PES; ++i) begin : fsqrts
         acl_fsqrt fsqrt (
             .clk    (clk),
-            .areset (1'b0),
+            .areset (reset),
             .en     (pe_enable),
             .a      (pe_data_in[i]),
             .q      (pe_data_out[i][0 +: 32])

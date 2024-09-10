@@ -377,7 +377,11 @@
 `endif
 `ifdef FPU_DSP
 `ifdef QUARTUS
-`define LATENCY_FDIV 15
+`ifdef ALTERA_S10
+`define LATENCY_FDIV 19
+`else
+`define LATENCY_FDIV 12
+`endif
 `endif
 `ifdef VIVADO
 `define LATENCY_FDIV 28
@@ -398,7 +402,11 @@
 `endif
 `ifdef FPU_DSP
 `ifdef QUARTUS
-`define LATENCY_FSQRT 10
+`ifdef ALTERA_S10
+`define LATENCY_FSQRT 12
+`else
+`define LATENCY_FSQRT 9
+`endif
 `endif
 `ifdef VIVADO
 `define LATENCY_FSQRT 28

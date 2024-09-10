@@ -101,7 +101,7 @@ module VX_fpu_div import VX_fpu_pkg::*; #(
     for (genvar i = 0; i < NUM_PES; ++i) begin : fdivs
         acl_fdiv fdiv (
             .clk    (clk),
-            .areset (1'b0),
+            .areset (reset),
             .en     (pe_enable),
             .a      (pe_data_in[i][0 +: 32]),
             .b      (pe_data_in[i][32 +: 32]),
