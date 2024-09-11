@@ -84,12 +84,11 @@ module VX_cache_wrap import VX_gpu_pkg::*; #(
 
     `STATIC_ASSERT(NUM_BANKS == (1 << `CLOG2(NUM_BANKS)), ("invalid parameter"))
 
-    localparam MSHR_ADDR_WIDTH = `LOG2UP(MSHR_SIZE);
-    localparam CACHE_MEM_TAG_WIDTH = MSHR_ADDR_WIDTH + `CS_BANK_SEL_BITS;
+    localparam CACHE_MEM_TAG_WIDTH = `CACHE_MEM_TAG_WIDTH(MSHR_SIZE, NUM_BANKS, UUID_WIDTH);
 
-    localparam MEM_TAG_WIDTH   = PASSTHRU ? `CACHE_BYPASS_TAG_WIDTH(NUM_REQS, LINE_SIZE, WORD_SIZE, TAG_WIDTH) :
-                                            (NC_ENABLE ? `CACHE_NC_MEM_TAG_WIDTH(MSHR_SIZE, NUM_BANKS, NUM_REQS, LINE_SIZE, WORD_SIZE, TAG_WIDTH) :
-                                                         `CACHE_MEM_TAG_WIDTH(MSHR_SIZE, NUM_BANKS));
+    localparam MEM_TAG_WIDTH = PASSTHRU ? `CACHE_BYPASS_TAG_WIDTH(NUM_REQS, LINE_SIZE, WORD_SIZE, TAG_WIDTH) :
+                                          (NC_ENABLE ? `CACHE_NC_MEM_TAG_WIDTH(MSHR_SIZE, NUM_BANKS, NUM_REQS, LINE_SIZE, WORD_SIZE, TAG_WIDTH, UUID_WIDTH) :
+                                                       CACHE_MEM_TAG_WIDTH);
 
     localparam NC_OR_BYPASS = (NC_ENABLE || PASSTHRU);
 
@@ -234,13 +233,13 @@ module VX_cache_wrap import VX_gpu_pkg::*; #(
         always @(posedge clk) begin
             if (core_req_fire) begin
                 if (core_bus_if[i].req_data.rw) begin
-                    `TRACE(1, ("%d: %s core-wr-req: addr=0x%0h, tag=0x%0h, req_idx=%0d, byteen=0x%h, data=0x%h (#%0d)\n", $time, INSTANCE_ID, `TO_FULL_ADDR(core_bus_if[i].req_data.addr), core_bus_if[i].req_data.tag, i, core_bus_if[i].req_data.byteen, core_bus_if[i].req_data.data, core_req_uuid))
+                    `TRACE(1, ("%t: %s core-wr-req: addr=0x%0h, tag=0x%0h, req_idx=%0d, byteen=0x%h, data=0x%h (#%0d)\n", $time, INSTANCE_ID, `TO_FULL_ADDR(core_bus_if[i].req_data.addr), core_bus_if[i].req_data.tag, i, core_bus_if[i].req_data.byteen, core_bus_if[i].req_data.data, core_req_uuid))
                 end else begin
-                    `TRACE(1, ("%d: %s core-rd-req: addr=0x%0h, tag=0x%0h, req_idx=%0d (#%0d)\n", $time, INSTANCE_ID, `TO_FULL_ADDR(core_bus_if[i].req_data.addr), core_bus_if[i].req_data.tag, i, core_req_uuid))
+                    `TRACE(1, ("%t: %s core-rd-req: addr=0x%0h, tag=0x%0h, req_idx=%0d (#%0d)\n", $time, INSTANCE_ID, `TO_FULL_ADDR(core_bus_if[i].req_data.addr), core_bus_if[i].req_data.tag, i, core_req_uuid))
                 end
             end
             if (core_rsp_fire) begin
-                `TRACE(1, ("%d: %s core-rd-rsp: tag=0x%0h, req_idx=%0d, data=0x%h (#%0d)\n", $time, INSTANCE_ID, core_bus_if[i].rsp_data.tag, i, core_bus_if[i].rsp_data.data, core_rsp_uuid))
+                `TRACE(1, ("%t: %s core-rd-rsp: tag=0x%0h, req_idx=%0d, data=0x%h (#%0d)\n", $time, INSTANCE_ID, core_bus_if[i].rsp_data.tag, i, core_bus_if[i].rsp_data.data, core_rsp_uuid))
             end
         end
     end
@@ -262,15 +261,15 @@ module VX_cache_wrap import VX_gpu_pkg::*; #(
     always @(posedge clk) begin
         if (mem_req_fire) begin
             if (mem_bus_if.req_data.rw) begin
-                `TRACE(1, ("%d: %s mem-wr-req: addr=0x%0h, tag=0x%0h, byteen=0x%h, data=0x%h (#%0d)\n",
+                `TRACE(1, ("%t: %s mem-wr-req: addr=0x%0h, tag=0x%0h, byteen=0x%h, data=0x%h (#%0d)\n",
                     $time, INSTANCE_ID, `TO_FULL_ADDR(mem_bus_if.req_data.addr), mem_bus_if.req_data.tag, mem_bus_if.req_data.byteen, mem_bus_if.req_data.data, mem_req_uuid))
             end else begin
-                `TRACE(1, ("%d: %s mem-rd-req: addr=0x%0h, tag=0x%0h (#%0d)\n",
+                `TRACE(1, ("%t: %s mem-rd-req: addr=0x%0h, tag=0x%0h (#%0d)\n",
                     $time, INSTANCE_ID, `TO_FULL_ADDR(mem_bus_if.req_data.addr), mem_bus_if.req_data.tag, mem_req_uuid))
             end
         end
         if (mem_rsp_fire) begin
-            `TRACE(1, ("%d: %s mem-rd-rsp: tag=0x%0h, data=0x%h (#%0d)\n",
+            `TRACE(1, ("%t: %s mem-rd-rsp: tag=0x%0h, data=0x%h (#%0d)\n",
                 $time, INSTANCE_ID, mem_bus_if.rsp_data.tag, mem_bus_if.rsp_data.data, mem_rsp_uuid))
         end
     end
