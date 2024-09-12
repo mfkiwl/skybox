@@ -32,7 +32,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
 
     // Inputs
     VX_dcr_bus_if.slave     dcr_bus_if,
-    VX_om_bus_if.slave     om_bus_if
+    VX_om_bus_if.slave      om_bus_if
 );
     localparam MEM_TAG_WIDTH    = `UUID_WIDTH + NUM_LANES * (`VX_OM_DIM_BITS + `VX_OM_DIM_BITS + 32 + `VX_OM_DEPTH_BITS + 1);
     localparam DS_TAG_WIDTH     = NUM_LANES * (`VX_OM_DIM_BITS + `VX_OM_DIM_BITS + 1 + 1 + 32);
@@ -48,7 +48,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
         .clk        (clk),
         .reset      (reset),
         .dcr_bus_if (dcr_bus_if),
-        .om_dcrs   (om_dcrs)
+        .om_dcrs    (om_dcrs)
     );
 
     ///////////////////////////////////////////////////////////////////////////

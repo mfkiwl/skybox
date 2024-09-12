@@ -70,13 +70,9 @@ module VX_graphics import VX_gpu_pkg::*; #(
         .NUM_LANES (`NUM_SFU_LANES)
     ) raster_bus_if[`NUM_RASTER_UNITS]();
 
-    VX_dcr_bus_if raster_dcr_bus_tmp_if();
-    assign raster_dcr_bus_tmp_if.write_valid = dcr_bus_if.write_valid && (dcr_bus_if.write_addr >= `VX_DCR_RASTER_STATE_BEGIN && dcr_bus_if.write_addr < `VX_DCR_RASTER_STATE_END);
-    assign raster_dcr_bus_tmp_if.write_addr  = dcr_bus_if.write_addr;
-    assign raster_dcr_bus_tmp_if.write_data  = dcr_bus_if.write_data;
-
     VX_dcr_bus_if raster_dcr_bus_if();
-    `BUFFER_DCR_BUS_IF (raster_dcr_bus_if, raster_dcr_bus_tmp_if, 1);
+    wire is_raster_dcr_addr = (dcr_bus_if.write_addr >= `VX_DCR_RASTER_STATE_BEGIN && dcr_bus_if.write_addr < `VX_DCR_RASTER_STATE_END);
+    `BUFFER_DCR_BUS_IF (raster_dcr_bus_if, dcr_bus_if, is_raster_dcr_addr, 1);
 
     // Generate all raster units
     for (genvar i = 0; i < `NUM_RASTER_UNITS; ++i) begin
@@ -192,13 +188,9 @@ module VX_graphics import VX_gpu_pkg::*; #(
         .bus_out_if (tex_bus_if)
     );
 
-    VX_dcr_bus_if tex_dcr_bus_tmp_if();
-    assign tex_dcr_bus_tmp_if.write_valid = dcr_bus_if.write_valid && (dcr_bus_if.write_addr >= `VX_DCR_TEX_STATE_BEGIN && dcr_bus_if.write_addr < `VX_DCR_TEX_STATE_END);
-    assign tex_dcr_bus_tmp_if.write_addr  = dcr_bus_if.write_addr;
-    assign tex_dcr_bus_tmp_if.write_data  = dcr_bus_if.write_data;
-
     VX_dcr_bus_if tex_dcr_bus_if();
-    `BUFFER_DCR_BUS_IF (tex_dcr_bus_if, tex_dcr_bus_tmp_if, 1);
+    wire is_tex_dcr_addr = (dcr_bus_if.write_addr >= `VX_DCR_TEX_STATE_BEGIN && dcr_bus_if.write_addr < `VX_DCR_TEX_STATE_END);
+    `BUFFER_DCR_BUS_IF (tex_dcr_bus_if, dcr_bus_if, is_tex_dcr_addr, 1);
 
     // Generate all texture units
     for (genvar i = 0; i < `NUM_TEX_UNITS; ++i) begin
@@ -292,13 +284,9 @@ module VX_graphics import VX_gpu_pkg::*; #(
         .bus_out_if (om_bus_if)
     );
 
-    VX_dcr_bus_if om_dcr_bus_tmp_if();
-    assign om_dcr_bus_tmp_if.write_valid = dcr_bus_if.write_valid && (dcr_bus_if.write_addr >= `VX_DCR_OM_STATE_BEGIN && dcr_bus_if.write_addr < `VX_DCR_OM_STATE_END);
-    assign om_dcr_bus_tmp_if.write_addr  = dcr_bus_if.write_addr;
-    assign om_dcr_bus_tmp_if.write_data  = dcr_bus_if.write_data;
-
     VX_dcr_bus_if om_dcr_bus_if();
-    `BUFFER_DCR_BUS_IF (om_dcr_bus_if, om_dcr_bus_tmp_if, 1);
+    wire is_om_dcr_addr = (dcr_bus_if.write_addr >= `VX_DCR_OM_STATE_BEGIN && dcr_bus_if.write_addr < `VX_DCR_OM_STATE_END);
+    `BUFFER_DCR_BUS_IF (om_dcr_bus_if, dcr_bus_if, is_om_dcr_addr, 1);
 
     // Generate all OM units
     for (genvar i = 0; i < `NUM_OM_UNITS; ++i) begin
