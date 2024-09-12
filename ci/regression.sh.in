@@ -157,8 +157,14 @@ om()
 {
 echo "begin render output tests..."
 
-CONFIGS="-DEXT_OM_ENABLE" ./ci/blackbox.sh --driver=simx --app=om --args="-rwhitebox_128.png" --perf=5
-CONFIGS="-DEXT_OM_ENABLE" ./ci/blackbox.sh --driver=rtlsim --app=om --args="-rwhitebox_128.png" --perf=5
+CONFIGS="-DEXT_OM_ENABLE" ./ci/blackbox.sh --driver=simx --app=om --args="-w32 -h32 -rwhitebox_32.png"
+CONFIGS="-DEXT_OM_ENABLE" ./ci/blackbox.sh --driver=simx --app=om --args="-w32 -h32 -d -rwhitebox_d_32.png"
+CONFIGS="-DEXT_OM_ENABLE" ./ci/blackbox.sh --driver=simx --app=om --args="-w32 -h32 -b -rwhitebox_b_32.png"
+CONFIGS="-DEXT_OM_ENABLE" ./ci/blackbox.sh --driver=simx --app=om --args="-w32 -h32 -db -rwhitebox_db_32.png"
+CONFIGS="-DEXT_OM_ENABLE" ./ci/blackbox.sh --driver=rtlsim --app=om --args="-w32 -h32 -rwhitebox_32.png"
+CONFIGS="-DEXT_OM_ENABLE" ./ci/blackbox.sh --driver=rtlsim --app=om --args="-w32 -h32 -d -rwhitebox_d_32.png"
+CONFIGS="-DEXT_OM_ENABLE" ./ci/blackbox.sh --driver=rtlsim --app=om --args="-w32 -h32 -b -rwhitebox_b_32.png"
+CONFIGS="-DEXT_OM_ENABLE" ./ci/blackbox.sh --driver=rtlsim --app=om --args="-w32 -h32 -db -rwhitebox_db_32.png"
 CONFIGS="-DEXT_OM_ENABLE -DOCACHE_DISABLE" ./ci/blackbox.sh --driver=rtlsim --app=om --args="-rwhitebox_128.png"
 CONFIGS="-DEXT_OM_ENABLE -DOCACHE_NUM_BANKS=8" ./ci/blackbox.sh --driver=rtlsim --app=om --args="-rwhitebox_128.png" --perf=5
 CONFIGS="-DEXT_OM_ENABLE -DNUM_OM_UNITS=2 -DL1_DISABLE -DLM_DISABLE -DOCACHE_DISABLE" ./ci/blackbox.sh --driver=simx --app=om --args="-rwhitebox_128.png" --cores=4 --warps=1 --threads=2
