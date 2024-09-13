@@ -82,8 +82,8 @@ module VX_tex_addr #(
 
     // addressing mode
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
-        for (genvar j = 0; j < 2; ++j) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_clamp
+        for (genvar j = 0; j < 2; ++j) begin  : g_j
             wire [`VX_TEX_FXD_FRAC-1:0] delta = `VX_TEX_FXD_FRAC'((SCALED_DIM'(`TEX_FXD_HALF) << req_miplevel[i]) >> req_logdims[j]);
             wire [`VX_TEX_FXD_BITS-1:0] coord_lo = req_filter ? (req_coords[j][i] - `VX_TEX_FXD_BITS'(delta)) : req_coords[j][i];
             wire [`VX_TEX_FXD_BITS-1:0] coord_hi = req_filter ? (req_coords[j][i] + `VX_TEX_FXD_BITS'(delta)) : req_coords[j][i];
@@ -99,13 +99,20 @@ module VX_tex_addr #(
                 .coord_i (coord_hi),
                 .coord_o (clamped_hi[i][j])
             );
+        end
+    end
 
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_dim_shift
+        for (genvar j = 0; j < 2; ++j) begin : g_j
             assign dim_shift[i][j] = SHIFT_BITS'(`VX_TEX_FXD_FRAC - `TEX_BLEND_FRAC) - (req_logdims[j] - req_miplevel[i]);
         end
     end
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_log_pitch
         assign log_pitch[i] = PITCH_BITS'(req_logdims[0] - req_miplevel[i]) + PITCH_BITS'(log_stride);
+    end
+
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_mip_addr
         assign mip_addr[i]  = {req_baseaddr, 6'b0} + W_ADDR_BITS'(req_mipoff[i]);
     end
 
@@ -131,22 +138,22 @@ module VX_tex_addr #(
     wire [NUM_LANES-1:0][1:0][`TEX_BLEND_FRAC-1:0] blends;
     wire [NUM_LANES-1:0][3:0][31:0] addr;
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
-        for (genvar j = 0; j < 2; ++j) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_scaled
+        for (genvar j = 0; j < 2; ++j) begin : g_j
             assign scaled_lo[i][j] = SCALED_X_W'(clamped_lo_s0[i][j] >> dim_shift_s0[i][j]);
             assign scaled_hi[i][j] = SCALED_X_W'(clamped_hi_s0[i][j] >> dim_shift_s0[i][j]);
             assign blends[i][j] = filter_s0 ? scaled_lo[i][j][`TEX_BLEND_FRAC-1:0] : `TEX_BLEND_FRAC'(0);
         end
     end
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_offset
         assign offset_u_lo[i] = OFFSET_U_W'(scaled_lo[i][0][`TEX_BLEND_FRAC +: `VX_TEX_DIM_BITS]) << log_stride_s0;
         assign offset_u_hi[i] = OFFSET_U_W'(scaled_hi[i][0][`TEX_BLEND_FRAC +: `VX_TEX_DIM_BITS]) << log_stride_s0;
         assign offset_v_lo[i] = OFFSET_V_W'(scaled_lo[i][1][`TEX_BLEND_FRAC +: `VX_TEX_DIM_BITS]) << log_pitch_s0[i];
         assign offset_v_hi[i] = OFFSET_V_W'(scaled_hi[i][1][`TEX_BLEND_FRAC +: `VX_TEX_DIM_BITS]) << log_pitch_s0[i];
     end
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_addr
         assign addr[i][0] = 32'(offset_v_lo[i]) + 32'(offset_u_lo[i]);
         assign addr[i][1] = 32'(offset_v_lo[i]) + 32'(offset_u_hi[i]);
         assign addr[i][2] = 32'(offset_v_hi[i]) + 32'(offset_u_lo[i]);

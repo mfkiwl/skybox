@@ -135,7 +135,7 @@ module VX_cluster import VX_gpu_pkg::*; #(
         .TAG_WIDTH (L1_MEM_ARB_TAG_WIDTH)
     ) per_socket_mem_bus_if[`NUM_SOCKETS]();
 
-    for (genvar i = 0; i < `NUM_SOCKETS; ++i) begin
+    for (genvar i = 0; i < `NUM_SOCKETS; ++i) begin : g_l2_mem_bus_if
         `ASSIGN_VX_MEM_BUS_IF_X (l2_mem_bus_if[L1_MEM_L2_IDX + i], per_socket_mem_bus_if[i], L2_TAG_WIDTH, L1_MEM_ARB_TAG_WIDTH);
     end
 
@@ -215,7 +215,7 @@ module VX_cluster import VX_gpu_pkg::*; #(
     wire [`NUM_SOCKETS-1:0] per_socket_busy;
 
     // Generate all sockets
-    for (genvar socket_id = 0; socket_id < `NUM_SOCKETS; ++socket_id) begin : sockets
+    for (genvar socket_id = 0; socket_id < `NUM_SOCKETS; ++socket_id) begin : g_sockets
 
         `RESET_RELAY (socket_reset, reset);
 

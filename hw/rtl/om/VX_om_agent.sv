@@ -40,7 +40,7 @@ module VX_om_agent import VX_om_pkg::*; #(
     wire [NUM_LANES-1:0][31:0]                  sfu_exe_color;
     wire [NUM_LANES-1:0][`VX_OM_DEPTH_BITS-1:0] sfu_exe_depth;
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_sfu_exe
         assign sfu_exe_face[i]  = execute_if.data.rs1_data[i][0];
         assign sfu_exe_pos_x[i] = execute_if.data.rs1_data[i][1 +: `VX_OM_DIM_BITS];
         assign sfu_exe_pos_y[i] = execute_if.data.rs1_data[i][16 +: `VX_OM_DIM_BITS];

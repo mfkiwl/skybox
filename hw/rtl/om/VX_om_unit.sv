@@ -253,7 +253,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     wire [NUM_LANES-1:0] blend_read_mask, blend_write_mask;
     wire [NUM_LANES-1:0] color_bypass_mask, ds_color_write_mask;
 
-    for (genvar i = 0;  i < NUM_LANES; ++i) begin
+    for (genvar i = 0;  i < NUM_LANES; ++i) begin : g_masks
         assign ds_read_mask[i]        = om_bus_if.req_data.mask[i] && ds_enable;
         assign blend_read_mask[i]     = om_bus_if.req_data.mask[i] && blend_writeen;
         assign ds_write_mask[i]       = ds_rsp_mask[i] && (stencil_writeen || (depth_writeen && ds_pass_out[i]));
@@ -339,12 +339,17 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     wire [`CLOG2(OCACHE_NUM_REQS+1)+1-1:0] perf_pending_reads_cycle;
 
     wire [OCACHE_NUM_REQS-1:0] perf_mem_rd_req_fire;
-    wire [OCACHE_NUM_REQS-1:0] perf_mem_wr_req_fire;
-    wire [OCACHE_NUM_REQS-1:0] perf_mem_rd_rsp_fire;
-
-    for (genvar i = 0; i < OCACHE_NUM_REQS; ++i) begin
+    for (genvar i = 0; i < OCACHE_NUM_REQS; ++i) begin : g_perf_mem_rd_req_fire
         assign perf_mem_rd_req_fire[i] = cache_bus_if[i].req_valid && ~cache_bus_if[i].req_data.rw && cache_bus_if[i].req_ready;
+    end
+
+    wire [OCACHE_NUM_REQS-1:0] perf_mem_wr_req_fire;
+    for (genvar i = 0; i < OCACHE_NUM_REQS; ++i) begin : g_perf_mem_wr_req_fire
         assign perf_mem_wr_req_fire[i] = cache_bus_if[i].rsp_valid && cache_bus_if[i].req_data.rw && cache_bus_if[i].rsp_ready;
+    end
+
+    wire [OCACHE_NUM_REQS-1:0] perf_mem_rd_rsp_fire;
+    for (genvar i = 0; i < OCACHE_NUM_REQS; ++i) begin : g_perf_mem_rd_rsp_fire
         assign perf_mem_rd_rsp_fire[i] = cache_bus_if[i].rsp_valid && cache_bus_if[i].rsp_ready;
     end
 

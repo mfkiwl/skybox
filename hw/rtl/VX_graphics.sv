@@ -75,8 +75,7 @@ module VX_graphics import VX_gpu_pkg::*; #(
     `BUFFER_DCR_BUS_IF (raster_dcr_bus_if, dcr_bus_if, is_raster_dcr_addr, 1);
 
     // Generate all raster units
-    for (genvar i = 0; i < `NUM_RASTER_UNITS; ++i) begin
-
+    for (genvar i = 0; i < `NUM_RASTER_UNITS; ++i) begin : g_raster_unit
         `RESET_RELAY (raster_reset, reset);
 
         VX_raster_unit #(
@@ -193,8 +192,7 @@ module VX_graphics import VX_gpu_pkg::*; #(
     `BUFFER_DCR_BUS_IF (tex_dcr_bus_if, dcr_bus_if, is_tex_dcr_addr, 1);
 
     // Generate all texture units
-    for (genvar i = 0; i < `NUM_TEX_UNITS; ++i) begin
-
+    for (genvar i = 0; i < `NUM_TEX_UNITS; ++i) begin : g_tex_unit
         `RESET_RELAY (tex_reset, reset);
 
         VX_tex_unit #(
@@ -289,8 +287,7 @@ module VX_graphics import VX_gpu_pkg::*; #(
     `BUFFER_DCR_BUS_IF (om_dcr_bus_if, dcr_bus_if, is_om_dcr_addr, 1);
 
     // Generate all OM units
-    for (genvar i = 0; i < `NUM_OM_UNITS; ++i) begin
-
+    for (genvar i = 0; i < `NUM_OM_UNITS; ++i) begin : g_om_unit
         `RESET_RELAY (om_reset, reset);
 
         VX_om_unit #(

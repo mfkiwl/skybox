@@ -1,12 +1,12 @@
 //!/bin/bash
 
 // Copyright © 2019-2023
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,14 +25,14 @@ module VX_raster_qe import VX_raster_pkg::*; #(
     parameter NUM_QUADS = 4
 ) (
     input wire clk,
-    input wire reset, 
+    input wire reset,
 
     // Device configurations
     raster_dcrs_t dcrs,
 
     input wire                                          enable,
 
-    // Inputs    
+    // Inputs
     input wire                                          valid_in,
     input wire [`VX_RASTER_PID_BITS-1:0]                pid_in,
     input wire [NUM_QUADS-1:0][`VX_RASTER_DIM_BITS-1:0] xloc_in,
@@ -47,9 +47,9 @@ module VX_raster_qe import VX_raster_pkg::*; #(
     output wire                                         valid_out,
     output wire [NUM_QUADS-1:0]                         overlap_out,
     output wire [`VX_RASTER_PID_BITS-1:0]               pid_out,
-    output wire [NUM_QUADS-1:0][3:0]                    mask_out,    
+    output wire [NUM_QUADS-1:0][3:0]                    mask_out,
     output wire [NUM_QUADS-1:0][`VX_RASTER_DIM_BITS-1:0] xloc_out,
-    output wire [NUM_QUADS-1:0][`VX_RASTER_DIM_BITS-1:0] yloc_out,    
+    output wire [NUM_QUADS-1:0][`VX_RASTER_DIM_BITS-1:0] yloc_out,
     output wire [NUM_QUADS-1:0][2:0][3:0][`RASTER_DATA_BITS-1:0] bcoords_out
 );
     `UNUSED_SPARAM (INSTANCE_ID)
@@ -61,16 +61,16 @@ module VX_raster_qe import VX_raster_pkg::*; #(
     wire [NUM_QUADS-1:0][3:0] overlap_mask;
 
      // Check if primitive overlaps current quad
-    for (genvar q = 0; q < NUM_QUADS; ++q) begin        
-        for (genvar i = 0; i < 2; ++i) begin
-            for (genvar j = 0; j < 2; ++j) begin            
-                for (genvar k = 0; k < 3; ++k) begin
+    for (genvar q = 0; q < NUM_QUADS; ++q) begin : g_overlap_mask
+        for (genvar i = 0; i < 2; ++i) begin : g_i
+            for (genvar j = 0; j < 2; ++j) begin : g_j
+                for (genvar k = 0; k < 3; ++k) begin : g_k
                     assign edge_eval[q][k][2 * j + i] = i * edges_in[q][k][0] + j * edges_in[q][k][1] + edges_in[q][k][2];
-                end    
+                end
                 wire [`VX_RASTER_DIM_BITS-1:0] quad_x = xloc_in[q] | i;
                 wire [`VX_RASTER_DIM_BITS-1:0] quad_y = yloc_in[q] | j;
-                assign overlap_mask[q][2 * j + i] = ~(edge_eval[q][0][2 * j + i][`RASTER_DATA_BITS-1] 
-                                                   || edge_eval[q][1][2 * j + i][`RASTER_DATA_BITS-1] 
+                assign overlap_mask[q][2 * j + i] = ~(edge_eval[q][0][2 * j + i][`RASTER_DATA_BITS-1]
+                                                   || edge_eval[q][1][2 * j + i][`RASTER_DATA_BITS-1]
                                                    || edge_eval[q][2][2 * j + i][`RASTER_DATA_BITS-1])
                                                   && (quad_x >= xmin_in)
                                                   && (quad_x <  xmax_in)

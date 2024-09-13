@@ -44,7 +44,7 @@ module VX_raster_csr import VX_raster_pkg::*; #(
     wire [`NW_WIDTH-1:0]             raddr;
 
     // CSR registers
-    for (genvar i = 0; i < `NUM_THREADS; ++i) begin
+    for (genvar i = 0; i < `NUM_THREADS; ++i) begin : g_stamp_store
         VX_dp_ram #(
             .DATAW  ($bits(raster_csrs_t)),
             .SIZE   (`NUM_WARPS),
@@ -82,7 +82,7 @@ module VX_raster_csr import VX_raster_pkg::*; #(
 
     wire [NUM_CSRS_BITS-1:0] csr_addr = raster_csr_if.read_addr[NUM_CSRS_BITS-1:0];
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_read_data
         wire [`VX_CSR_RASTER_COUNT-1:0][31:0] indexable_rdata = rdata[raster_csr_if.read_pid * NUM_LANES + i];
         assign raster_csr_if.read_data[i] = `XLEN'(indexable_rdata[csr_addr]);
     end
@@ -105,12 +105,15 @@ module VX_raster_csr import VX_raster_pkg::*; #(
 `ifdef DBG_TRACE_RASTER
     wire [NUM_LANES-1:0][`VX_RASTER_DIM_BITS-2:0] pos_x;
     wire [NUM_LANES-1:0][`VX_RASTER_DIM_BITS-2:0] pos_y;
-    wire [NUM_LANES-1:0][3:0]                  mask;
+    wire [NUM_LANES-1:0][3:0] mask;
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_pos
         assign pos_x[i] = write_data[i].pos_x;
         assign pos_y[i] = write_data[i].pos_y;
-        assign mask[i]  = write_data[i].mask;
+    end
+
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_mask
+        assign mask[i] = write_data[i].mask;
     end
 
     always @(posedge clk) begin

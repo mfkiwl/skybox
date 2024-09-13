@@ -74,9 +74,13 @@ module VX_tex_agent import VX_tex_pkg::*; #(
     wire mdata_full;
 
     assign sfu_exe_stage = execute_if.data.op_args.tex.stage;
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_sfu_exe_coords
         assign sfu_exe_coords[0][i] = execute_if.data.rs1_data[i][31:0];
         assign sfu_exe_coords[1][i] = execute_if.data.rs2_data[i][31:0];
+    end
+
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_sfu_exe_lod
         assign sfu_exe_lod[i]       = execute_if.data.rs3_data[i][0 +: `VX_TEX_LOD_BITS];
     end
 
@@ -143,7 +147,7 @@ module VX_tex_agent import VX_tex_pkg::*; #(
         .ready_out (commit_if.ready)
     );
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_commit_data
         assign commit_if.data.data[i] = `XLEN'(commit_data[i]);
     end
 

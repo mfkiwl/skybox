@@ -114,11 +114,11 @@ module VX_mem_coalescer #(
     logic [NUM_REQS-1:0] req_rem_mask_r, req_rem_mask_n;
 
     wire [NUM_REQS-1:0][DATA_RATIO_W-1:0] in_addr_offset;
-    for (genvar i = 0; i < NUM_REQS; i++) begin
+    for (genvar i = 0; i < NUM_REQS; i++) begin : g_in_addr_offset
         assign in_addr_offset[i] = in_req_addr[i][DATA_RATIO_W-1:0];
     end
 
-    for (genvar i = 0; i < OUT_REQS; ++i) begin
+    for (genvar i = 0; i < OUT_REQS; ++i) begin : g_seed_gen
         wire [DATA_RATIO-1:0] batch_mask;
         wire [DATA_RATIO_W-1:0] batch_idx;
 
@@ -134,16 +134,19 @@ module VX_mem_coalescer #(
         );
 
         wire [DATA_RATIO-1:0][OUT_ADDR_WIDTH-1:0] addr_base;
-        wire [DATA_RATIO-1:0][FLAGS_WIDTH-1:0] req_flags;
-        for (genvar j = 0; j < DATA_RATIO; ++j) begin
+        for (genvar j = 0; j < DATA_RATIO; ++j) begin : g_addr_base
             assign addr_base[j] = in_req_addr[DATA_RATIO * i + j][ADDR_WIDTH-1:DATA_RATIO_W];
+        end
+
+        wire [DATA_RATIO-1:0][FLAGS_WIDTH-1:0] req_flags;
+        for (genvar j = 0; j < DATA_RATIO; ++j) begin : g_req_flags
             assign req_flags[j] = in_req_flags[DATA_RATIO * i + j];
         end
 
         assign seed_addr_n[i]  = addr_base[batch_idx];
         assign seed_flags_n[i] = req_flags[batch_idx];
 
-        for (genvar j = 0; j < DATA_RATIO; ++j) begin
+        for (genvar j = 0; j < DATA_RATIO; ++j) begin : g_addr_matches_n
             assign addr_matches_n[i * DATA_RATIO + j] = (addr_base[j] == seed_addr_n[i]);
         end
     end
@@ -290,12 +293,16 @@ module VX_mem_coalescer #(
     assign {ibuf_dout_tag, ibuf_dout_pmask, ibuf_dout_offset} = ibuf_dout;
 
     wire [NUM_REQS-1:0][DATA_IN_WIDTH-1:0] in_rsp_data_n;
-    wire [NUM_REQS-1:0] in_rsp_mask_n;
-
-    for (genvar i = 0; i < OUT_REQS; ++i) begin
-        for (genvar j = 0; j < DATA_RATIO; ++j) begin
-            assign in_rsp_mask_n[i * DATA_RATIO + j] = out_rsp_mask[i] && ibuf_dout_pmask[i * DATA_RATIO + j];
+    for (genvar i = 0; i < OUT_REQS; ++i) begin : g_in_rsp_data_n
+        for (genvar j = 0; j < DATA_RATIO; ++j) begin : g_j
             assign in_rsp_data_n[i * DATA_RATIO + j] = out_rsp_data[i][ibuf_dout_offset[i * DATA_RATIO + j] * DATA_IN_WIDTH +: DATA_IN_WIDTH];
+        end
+    end
+
+    wire [NUM_REQS-1:0] in_rsp_mask_n;
+    for (genvar i = 0; i < OUT_REQS; ++i) begin : g_in_rsp_mask_n
+        for (genvar j = 0; j < DATA_RATIO; ++j) begin : g_j
+            assign in_rsp_mask_n[i * DATA_RATIO + j] = out_rsp_mask[i] && ibuf_dout_pmask[i * DATA_RATIO + j];
         end
     end
 
@@ -309,11 +316,15 @@ module VX_mem_coalescer #(
     wire [`UP(UUID_WIDTH)-1:0] out_req_uuid;
     wire [`UP(UUID_WIDTH)-1:0] out_rsp_uuid;
 
-    if (UUID_WIDTH != 0) begin
+    if (UUID_WIDTH != 0) begin : g_out_req_uuid
         assign out_req_uuid = out_req_tag[OUT_TAG_WIDTH-1 -: UUID_WIDTH];
-        assign out_rsp_uuid = out_rsp_tag[OUT_TAG_WIDTH-1 -: UUID_WIDTH];
-    end else begin
+    end else begin : g_out_req_uuid_0
         assign out_req_uuid = '0;
+    end
+
+    if (UUID_WIDTH != 0) begin : g_out_rsp_uuid
+        assign out_rsp_uuid = out_rsp_tag[OUT_TAG_WIDTH-1 -: UUID_WIDTH];
+    end else begin : g_out_rsp_uuid_0
         assign out_rsp_uuid = '0;
     end
 
@@ -330,7 +341,7 @@ module VX_mem_coalescer #(
     always @(posedge clk) begin
         if (out_req_fire) begin
             if (out_req_rw) begin
-                `TRACE(1, ("%d: %s out-req-wr: valid=%b, addr=", $time, INSTANCE_ID, out_req_mask))
+                `TRACE(1, ("%t: %s out-req-wr: valid=%b, addr=", $time, INSTANCE_ID, out_req_mask))
                 `TRACE_ARRAY1D(1, "0x%h", out_req_addr, OUT_REQS)
                 `TRACE(1, (", flags="))
                 `TRACE_ARRAY1D(1, "%b", out_req_flags, OUT_REQS)
@@ -349,7 +360,7 @@ module VX_mem_coalescer #(
             `TRACE(1, (", pmask=%b, coalesced=%0d, tag=0x%0h (#%0d)\n", out_req_pmask, $countones(out_req_pmask), out_req_tag, out_req_uuid))
         end
         if (out_rsp_fire) begin
-            `TRACE(1, ("%d: %s out-rsp: valid=%b, data=", $time, INSTANCE_ID, out_rsp_mask))
+            `TRACE(1, ("%t: %s out-rsp: valid=%b, data=", $time, INSTANCE_ID, out_rsp_mask))
             `TRACE_ARRAY1D(1, "0x%0h", out_rsp_data, OUT_REQS)
             `TRACE(1, (", offset="))
             `TRACE_ARRAY1D(1, "%0d", ibuf_dout_offset, NUM_REQS)

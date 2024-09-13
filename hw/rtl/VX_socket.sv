@@ -305,7 +305,7 @@ module VX_socket import VX_gpu_pkg::*; #(
     wire [`SOCKET_SIZE-1:0] per_core_busy;
 
     // Generate all cores
-    for (genvar core_id = 0; core_id < `SOCKET_SIZE; ++core_id) begin : cores
+    for (genvar core_id = 0; core_id < `SOCKET_SIZE; ++core_id) begin : g_cores
 
         `RESET_RELAY (core_reset, reset);
 

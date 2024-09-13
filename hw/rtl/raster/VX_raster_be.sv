@@ -66,13 +66,13 @@ module VX_raster_be import VX_raster_pkg::*; #(
     wire [PER_BLOCK_QUADS-1:0][2:0][2:0][`RASTER_DATA_BITS-1:0] quad_edges, quad_edges_r;
 
     // Per-quad edge evaluation
-    for (genvar i = 0; i < PER_BLOCK_QUADS; ++i) begin
+    for (genvar i = 0; i < PER_BLOCK_QUADS; ++i) begin : g_quad_edges
         localparam ii = i % NUM_QUADS_DIM;
         localparam jj = i / NUM_QUADS_DIM;
         assign quad_xloc[i] = xloc_in + `VX_RASTER_DIM_BITS'(2 * ii);
         assign quad_yloc[i] = yloc_in + `VX_RASTER_DIM_BITS'(2 * jj);
         wire [2:0][`RASTER_DATA_BITS-1:0] quad_edge_eval;
-        for (genvar k = 0; k < 3; ++k) begin
+        for (genvar k = 0; k < 3; ++k) begin : g_k
             assign quad_edge_eval[k] = ii * 2 * edges_in[k][0] + jj * 2 * edges_in[k][1] + edges_in[k][2];
         end
         `EDGE_UPDATE (quad_edges[i], edges_in, quad_edge_eval);
@@ -132,17 +132,17 @@ module VX_raster_be import VX_raster_pkg::*; #(
     wire [OUTPUT_BATCHES-1:0][OUTPUT_QUADS-1:0] fifo_mask_in;
     raster_stamp_t [OUTPUT_BATCHES-1:0][OUTPUT_QUADS-1:0] fifo_stamp_in;
 
-    for (genvar i = 0; i < OUTPUT_BATCHES * OUTPUT_QUADS; ++i) begin
+    for (genvar i = 0; i < OUTPUT_BATCHES * OUTPUT_QUADS; ++i) begin : g_fifo_inputs
         localparam q = i % OUTPUT_QUADS;
         localparam b = i / OUTPUT_QUADS;
-        if (i < PER_BLOCK_QUADS) begin
+        if (i < PER_BLOCK_QUADS) begin : g_valid
             assign fifo_mask_in [b][q]         = qe_overlap[i];
             assign fifo_stamp_in[b][q].pos_x   = qe_xloc[i][`VX_RASTER_DIM_BITS-1:1];
             assign fifo_stamp_in[b][q].pos_y   = qe_yloc[i][`VX_RASTER_DIM_BITS-1:1];
             assign fifo_stamp_in[b][q].mask    = qe_mask[i];
             assign fifo_stamp_in[b][q].pid     = qe_pid;
             assign fifo_stamp_in[b][q].bcoords = qe_bcoords[i];
-        end else begin
+        end else begin : g_extra
             assign fifo_mask_in[b][q]  = 0;
             assign fifo_stamp_in[b][q] = '0;
         end
@@ -159,7 +159,7 @@ module VX_raster_be import VX_raster_pkg::*; #(
 
     wire fifo_fire;
 
-    for (genvar i = 0; i < OUTPUT_BATCHES; ++i) begin
+    for (genvar i = 0; i < OUTPUT_BATCHES; ++i) begin : g_batch_valid
         assign batch_valid[i] = qe_valid && (| fifo_mask_in[i]);
     end
 

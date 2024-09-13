@@ -79,14 +79,14 @@ module VX_om_mem import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     wire [3:0] color_byteen = dcrs.cbuf_writemask;
     wire [2:0] depth_byteen = {3{dcrs.depth_writemask}};
     wire [NUM_LANES-1:0] stencil_byteen;
-    for (genvar i = 0;  i < NUM_LANES; ++i) begin
+    for (genvar i = 0;  i < NUM_LANES; ++i) begin : g_stencil_byteen
         assign stencil_byteen[i] = (dcrs.stencil_writemask[req_face[i]] != 0);
     end
 
     wire mul_enable;
 
     // depth/stencil values submission
-    for (genvar i = 0;  i < NUM_LANES; ++i) begin
+    for (genvar i = 0;  i < NUM_LANES; ++i) begin : g_DS
         wire [31:0] m_y_pitch;
         `UNUSED_VAR (m_y_pitch)
 
@@ -126,7 +126,7 @@ module VX_om_mem import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     end
 
     // blend color submission
-    for (genvar i = NUM_LANES; i < NUM_REQS; ++i) begin
+    for (genvar i = NUM_LANES; i < NUM_REQS; ++i) begin : g_color
         wire [31:0] m_y_pitch;
         `UNUSED_VAR (m_y_pitch)
 
@@ -276,12 +276,15 @@ module VX_om_mem import VX_gpu_pkg::*; import VX_om_pkg::*; #(
 
     assign rsp_mask = (mrsp_mask[0 +: NUM_LANES] | mrsp_mask[NUM_LANES +: NUM_LANES]);
 
-    for (genvar i = 0;  i < NUM_LANES; ++i) begin
+    for (genvar i = 0;  i < NUM_LANES; ++i) begin : g_rsp_depth
         assign rsp_depth[i]   = `VX_OM_DEPTH_BITS'(mrsp_data[i] >> 0) & `VX_OM_DEPTH_BITS'(`VX_OM_DEPTH_MASK);
+    end
+
+    for (genvar i = 0;  i < NUM_LANES; ++i) begin : g_rsp_stencil
         assign rsp_stencil[i] = `VX_OM_STENCIL_BITS'(mrsp_data[i] >> `VX_OM_DEPTH_BITS) & `VX_OM_STENCIL_BITS'(`VX_OM_STENCIL_MASK);
     end
 
-    for (genvar i = NUM_LANES; i < NUM_REQS; ++i) begin
+    for (genvar i = NUM_LANES; i < NUM_REQS; ++i) begin : g_rsp_color
         assign rsp_color[i - NUM_LANES] = mrsp_data[i];
     end
 

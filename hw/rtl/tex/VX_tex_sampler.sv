@@ -48,8 +48,8 @@ module VX_tex_sampler #(
 
     wire stall_out;
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
-        for (genvar j = 0; j < 4; ++j) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_fmt_texels
+        for (genvar j = 0; j < 4; ++j) begin : g_j
             VX_tex_format tex_format (
                 .format    (req_format),
                 .texel_in  (req_data[i][j]),
@@ -69,8 +69,8 @@ module VX_tex_sampler #(
         .data_out ({valid_s0,  req_info_s0, req_blends_s0, fmt_texels_s0})
     );
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
-        for (genvar j = 0; j < 4; ++j) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_tex_lerp_U
+        for (genvar j = 0; j < 4; ++j) begin : g_j
             VX_tex_lerp #(
                 .LATENCY (3)
             ) tex_lerp_ul (
@@ -96,7 +96,7 @@ module VX_tex_sampler #(
         end
     end
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_blend_v
         assign blend_v_s0[i] = req_blends_s0[i][1];
     end
 
@@ -112,8 +112,8 @@ module VX_tex_sampler #(
         .data_out ({valid_s1, req_info_s1, blend_v_s1})
     );
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
-        for (genvar j = 0; j < 4; ++j) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_tex_lerp_V
+        for (genvar j = 0; j < 4; ++j) begin : g_j
             VX_tex_lerp #(
                 .LATENCY (3)
             ) tex_lerp_v (

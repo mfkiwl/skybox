@@ -42,12 +42,12 @@ module VX_raster_arb import VX_raster_pkg::*; #(
     wire [NUM_OUTPUTS-1:0]                req_ready_out;
 
     wire [NUM_INPUTS-1:0] done_mask;
-    for (genvar i = 0; i < NUM_INPUTS; ++i) begin
+    for (genvar i = 0; i < NUM_INPUTS; ++i) begin : g_done_mask
         assign done_mask[i] = bus_in_if[i].req_data.done;
     end
     wire done_all = (& done_mask);
 
-    for (genvar i = 0; i < NUM_INPUTS; ++i) begin
+    for (genvar i = 0; i < NUM_INPUTS; ++i) begin : g_req_data_in
         assign req_valid_in[i] = bus_in_if[i].req_valid;
         assign req_data_in[i]  = {bus_in_if[i].req_data.stamps, done_all};
         assign bus_in_if[i].req_ready = req_ready_in[i];
@@ -71,7 +71,7 @@ module VX_raster_arb import VX_raster_pkg::*; #(
         `UNUSED_PIN (sel_out)
     );
 
-    for (genvar i = 0; i < NUM_OUTPUTS; ++i) begin
+    for (genvar i = 0; i < NUM_OUTPUTS; ++i) begin : g_bus_out_if
         assign bus_out_if[i].req_valid = req_valid_out[i];
         assign {bus_out_if[i].req_data.stamps, bus_out_if[i].req_data.done} = req_data_out[i];
         assign req_ready_out[i] = bus_out_if[i].req_ready;

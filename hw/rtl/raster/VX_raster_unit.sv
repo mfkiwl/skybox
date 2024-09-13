@@ -371,10 +371,12 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
     wire [`CLOG2(RCACHE_NUM_REQS+1)+1-1:0] perf_pending_reads_cycle;
 
     wire [RCACHE_NUM_REQS-1:0] perf_mem_req_fire;
-    wire [RCACHE_NUM_REQS-1:0] perf_mem_rsp_fire;
-
-    for (genvar i = 0; i < RCACHE_NUM_REQS; ++i) begin
+    for (genvar i = 0; i < RCACHE_NUM_REQS; ++i) begin : g_perf_mem_req_fire
         assign perf_mem_req_fire[i] = cache_bus_if[i].req_valid && cache_bus_if[i].req_ready;
+    end
+
+    wire [RCACHE_NUM_REQS-1:0] perf_mem_rsp_fire;
+    for (genvar i = 0; i < RCACHE_NUM_REQS; ++i) begin : g_perf_mem_rsp_fire
         assign perf_mem_rsp_fire[i] = cache_bus_if[i].rsp_valid && cache_bus_if[i].rsp_ready;
     end
 

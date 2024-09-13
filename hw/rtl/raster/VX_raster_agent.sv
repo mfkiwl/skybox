@@ -68,7 +68,7 @@ module VX_raster_agent #(
 
     wire [NUM_LANES-1:0][31:0] response_data, commit_data;
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_response_data
         assign response_data[i] = {31'(raster_bus_if.req_data.stamps[i].pid), ~raster_bus_if.req_data.done};
     end
 
@@ -86,7 +86,7 @@ module VX_raster_agent #(
         .ready_out (commit_if.ready)
     );
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_commit_data
         assign commit_if.data.data[i] = `XLEN'(commit_data[i]);
     end
 

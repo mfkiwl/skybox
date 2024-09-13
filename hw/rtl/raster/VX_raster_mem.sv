@@ -271,9 +271,12 @@ module VX_raster_mem import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
                         && (~prim_data_rsp_valid || buf_in_ready);
 
     wire [8:0][RCACHE_ADDR_WIDTH-1:0] mem_req_addr_w;
-    wire [8:0][RCACHE_WORD_SIZE-1:0] mem_req_byteen;
-    for (genvar i = 0; i < 9; ++i) begin
+    for (genvar i = 0; i < 9; ++i) begin : g_mem_req_addr_w
         assign mem_req_addr_w[i] = RCACHE_ADDR_WIDTH'(mem_req_addr[i]);
+    end
+
+    wire [8:0][RCACHE_WORD_SIZE-1:0] mem_req_byteen;
+    for (genvar i = 0; i < 9; ++i) begin : g_mem_req_byteen
         assign mem_req_byteen[i] = {RCACHE_WORD_SIZE{1'b1}};
     end
 
@@ -372,7 +375,7 @@ module VX_raster_mem import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
         .result (prim_mem_offset)
     );
 
-    for (genvar i = 0; i < 9; ++i) begin
+    for (genvar i = 0; i < 9; ++i) begin : g_prim_mem_addr
         wire [W_ADDR_BITS-1:0] offset = W_ADDR_BITS'(prim_mem_offset[31:2]) + W_ADDR_BITS'(1 * i);
         assign prim_mem_addr[i] = {dcrs.pbuf_addr, 4'b0} + offset;
     end

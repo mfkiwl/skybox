@@ -69,7 +69,7 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     wire [TAG_WIDTH-1:0]                        req_tag;
     wire                                        req_ready;
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_mip_sel
         assign sel_miplevel[i] = tex_bus_if.req_data.lod[i][`VX_TEX_LOD_BITS-1:0];
         assign sel_mipoff[i] = tex_dcrs.mipoff[sel_miplevel[i]];
     end
@@ -220,10 +220,12 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     wire [`CLOG2(TCACHE_NUM_REQS+1)+1-1:0] perf_pending_reads_cycle;
 
     wire [TCACHE_NUM_REQS-1:0] perf_mem_req_fire;
-    wire [TCACHE_NUM_REQS-1:0] perf_mem_rsp_fire;
-
-    for (genvar i = 0; i < TCACHE_NUM_REQS; ++i) begin
+    for (genvar i = 0; i < TCACHE_NUM_REQS; ++i) begin : g_perf_mem_req_fire
         assign perf_mem_req_fire[i] = cache_bus_if[i].req_valid && cache_bus_if[i].req_ready;
+    end
+
+    wire [TCACHE_NUM_REQS-1:0] perf_mem_rsp_fire;
+    for (genvar i = 0; i < TCACHE_NUM_REQS; ++i) begin : g_perf_mem_rsp_fire
         assign perf_mem_rsp_fire[i] = cache_bus_if[i].rsp_valid && cache_bus_if[i].rsp_ready;
     end
 

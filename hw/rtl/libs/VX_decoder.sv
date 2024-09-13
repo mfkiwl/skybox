@@ -28,12 +28,12 @@ module VX_decoder #(
     output wire [D-1:0][M-1:0] data_out
 );
     logic [D-1:0][M-1:0] shift;
-    if (MODEL == 1) begin
+    if (MODEL == 1) begin : g_model1
         always @(*) begin
             shift = '0;
             shift[data_in] = 1'b1;
         end
-    end else begin
+    end else begin : g_model0
         assign shift = (D*M)'(1'b1) << (data_in * M);
     end
     assign data_out = {D{valid_in}} & shift;

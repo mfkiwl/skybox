@@ -50,7 +50,9 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     wire [3:0][NUM_LANES-1:0]      mem_req_mask;
     wire [3:0][NUM_LANES-1:0][TCACHE_ADDR_WIDTH-1:0] mem_req_addr;
     wire [3:0][NUM_LANES-1:0][3:0] mem_req_byteen;
+    wire [3:0][NUM_LANES-1:0][1:0] mem_req_align;
     wire [TAG_WIDTH-1:0]           mem_req_tag;
+    wire [3:0]                     mem_req_dups;
     wire                           mem_req_ready;
 
     wire                           mem_rsp_valid;
@@ -61,19 +63,16 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     // full address calculation
 
     wire [NUM_LANES-1:0][3:0][W_ADDR_BITS-1:0] full_addr;
-
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
-        for (genvar j = 0; j < 4; ++j) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_full_addr
+        for (genvar j = 0; j < 4; ++j) begin  : G_J
             assign full_addr[i][j] = req_baseaddr[i] + W_ADDR_BITS'(req_addr[i][j]);
         end
     end
 
     // reorder addresses into per-quad requests
 
-    wire [3:0][NUM_LANES-1:0][1:0] mem_req_align;
-
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
-        for (genvar j = 0; j < 4; ++j) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_mem_req_align
+        for (genvar j = 0; j < 4; ++j) begin : g_j
             assign mem_req_addr[j][i]   = TCACHE_ADDR_WIDTH'(full_addr[i][j][W_ADDR_BITS-1:2]);
             assign mem_req_align[j][i]  = full_addr[i][j][1:0];
             assign mem_req_byteen[j][i] = 4'b1111;
@@ -82,20 +81,21 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
 
     // detect duplicate addresses
 
-    wire [3:0] mem_req_dups;
-
-    for (genvar i = 0; i < 4; ++i) begin
-        wire texel_valid = req_filter || (i == 0);
-        if (NUM_LANES > 1) begin
+    for (genvar i = 0; i < 4; ++i) begin : g_mem_req_dups
+        if (NUM_LANES > 1) begin : g_lanes
             wire [NUM_LANES-2:0] addr_matches;
-            for (genvar j = 0; j < (NUM_LANES-1); ++j) begin
+            for (genvar j = 0; j < (NUM_LANES-1); ++j) begin : g_j
                 assign addr_matches[j] = (req_addr[j+1][i] == req_addr[0][i]) || ~req_mask[j+1];
             end
             assign mem_req_dups[i] = req_mask[0] && (& addr_matches);
-        end else begin
+        end else begin : g_1lane
             assign mem_req_dups[i] = 0;
         end
-        for (genvar j = 0; j < NUM_LANES; ++j) begin
+    end
+
+    for (genvar i = 0; i < 4; ++i) begin : g_mem_req_mask
+        wire texel_valid = req_filter || (i == 0);
+        for (genvar j = 0; j < NUM_LANES; ++j) begin : g_j
             assign mem_req_mask[i][j] = req_mask[j] && texel_valid && (~mem_req_dups[i] || (j == 0));
         end
     end
@@ -198,8 +198,8 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
 
     reg [NUM_LANES-1:0][3:0][31:0] mem_rsp_data_qual;
 
-    for (genvar i = 0; i < NUM_LANES; ++i) begin
-        for (genvar j = 0; j < 4; ++j) begin
+    for (genvar i = 0; i < NUM_LANES; ++i) begin : g_mem_rsp_data_qual
+        for (genvar j = 0; j < 4; ++j) begin : g_j
             wire use_i0 = (i == 0 || mem_rsp_dups[j]);
             wire use_j0 = (j == 0 || 0 == rsp_filter);
             wire [31:0] src_data = (use_i0 && use_j0) ? mem_rsp_data[0][0] :
