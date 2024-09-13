@@ -118,34 +118,6 @@ module VX_cache_data #(
         assign dirty_byteen = '1;
     end
 
-    if (DIRTY_BYTES) begin : g_dirty_byteen
-        wire [NUM_WAYS-1:0][LINE_SIZE-1:0] bs_rdata;
-        wire [NUM_WAYS-1:0][LINE_SIZE-1:0] bs_wdata;
-
-        for (genvar i = 0; i < NUM_WAYS; ++i) begin : g_bs_wdata
-            wire [LINE_SIZE-1:0] wdata = write ? (bs_rdata[i] | write_byteen) : ((fill || flush) ? '0 : bs_rdata[i]);
-            assign bs_wdata[i] = init ? '0 : (way_sel[i] ? wdata : bs_rdata[i]);
-        end
-
-        VX_sp_ram #(
-            .DATAW (LINE_SIZE * NUM_WAYS),
-            .SIZE  (`CS_LINES_PER_BANK)
-        ) byteen_store (
-            .clk   (clk),
-            .reset (reset),
-            .read  (write || fill || flush),
-            .write (init || write || fill || flush),
-            .wren  (1'b1),
-            .addr  (line_sel),
-            .wdata (bs_wdata),
-            .rdata (bs_rdata)
-        );
-
-        assign dirty_byteen = bs_rdata[way_idx];
-    end else begin : g_dirty_byteen_0
-        assign dirty_byteen = '1;
-    end
-
     // order the data layout to perform ways multiplexing last.
     // this allows converting way index to binary in parallel with BRAM readaccess  and way selection.
 
