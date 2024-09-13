@@ -76,15 +76,46 @@ module VX_cache_data #(
     wire [`LOG2UP(NUM_WAYS)-1:0] way_idx;
 
     if (WRITEBACK) begin : g_dirty_data
-        wire [NUM_WAYS-1:0][`CS_WORDS_PER_LINE-1:0][`CS_WORD_WIDTH-1:0] flipped_rdata;
-        for (genvar i = 0; i < `CS_WORDS_PER_LINE; ++i) begin : g_flipped_rdata
-            for (genvar j = 0; j < NUM_WAYS; ++j) begin : g_j
-                assign flipped_rdata[j][i] = line_rdata[i][j];
-            end
-        end
-        assign dirty_data = flipped_rdata[way_idx];
+        wire [NUM_WAYS-1:0][`CS_WORDS_PER_LINE-1:0][`CS_WORD_WIDTH-1:0] transposed_rdata;
+        VX_transpose #(
+            .DATAW (`CS_WORD_WIDTH),
+            .N (`CS_WORDS_PER_LINE),
+            .M (NUM_WAYS)
+        ) transpose (
+            .data_in  (line_rdata),
+            .data_out (transposed_rdata)
+        );
+        assign dirty_data = transposed_rdata[way_idx];
     end else begin : g_dirty_data_0
         assign dirty_data = '0;
+    end
+
+    if (DIRTY_BYTES) begin : g_dirty_byteen
+        wire [NUM_WAYS-1:0][LINE_SIZE-1:0] bs_rdata;
+        wire [NUM_WAYS-1:0][LINE_SIZE-1:0] bs_wdata;
+
+        for (genvar i = 0; i < NUM_WAYS; ++i) begin : g_bs_wdata
+            wire [LINE_SIZE-1:0] wdata = write ? (bs_rdata[i] | write_byteen) : ((fill || flush) ? '0 : bs_rdata[i]);
+            assign bs_wdata[i] = init ? '0 : (way_sel[i] ? wdata : bs_rdata[i]);
+        end
+
+        VX_sp_ram #(
+            .DATAW (LINE_SIZE * NUM_WAYS),
+            .SIZE  (`CS_LINES_PER_BANK)
+        ) byteen_store (
+            .clk   (clk),
+            .reset (reset),
+            .read  (write || fill || flush),
+            .write (init || write || fill || flush),
+            .wren  (1'b1),
+            .addr  (line_sel),
+            .wdata (bs_wdata),
+            .rdata (bs_rdata)
+        );
+
+        assign dirty_byteen = bs_rdata[way_idx];
+    end else begin : g_dirty_byteen_0
+        assign dirty_byteen = '1;
     end
 
     if (DIRTY_BYTES) begin : g_dirty_byteen
