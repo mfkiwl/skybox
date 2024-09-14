@@ -36,11 +36,11 @@ module VX_om_blend import VX_om_pkg::*; #(
     input wire                  ready_out,
 
     // Input values
-    input rgba_t [NUM_LANES-1:0] src_color,
-    input rgba_t [NUM_LANES-1:0] dst_color,
+    input om_color_t [NUM_LANES-1:0] src_color,
+    input om_color_t [NUM_LANES-1:0] dst_color,
 
     // Output values
-    output rgba_t [NUM_LANES-1:0] color_out
+    output om_color_t [NUM_LANES-1:0] color_out
 );
     `UNUSED_SPARAM (INSTANCE_ID)
 
@@ -52,8 +52,8 @@ module VX_om_blend import VX_om_pkg::*; #(
 
     assign ready_in = ~stall;
 
-    rgba_t [NUM_LANES-1:0]  src_factor;
-    rgba_t [NUM_LANES-1:0]  dst_factor;
+    om_color_t [NUM_LANES-1:0]  src_factor;
+    om_color_t [NUM_LANES-1:0]  dst_factor;
 
     for (genvar i = 0; i < NUM_LANES; ++i) begin : g_blend_func_src
         VX_om_blend_func blend_func_src (
@@ -80,10 +80,10 @@ module VX_om_blend import VX_om_pkg::*; #(
     wire                 valid_s1, valid_s2;
     wire [TAG_WIDTH-1:0] tag_s1, tag_s2;
 
-    rgba_t [NUM_LANES-1:0] src_color_s1;
-    rgba_t [NUM_LANES-1:0] dst_color_s1;
-    rgba_t [NUM_LANES-1:0] src_factor_s1;
-    rgba_t [NUM_LANES-1:0] dst_factor_s1;
+    om_color_t [NUM_LANES-1:0] src_color_s1;
+    om_color_t [NUM_LANES-1:0] dst_color_s1;
+    om_color_t [NUM_LANES-1:0] src_factor_s1;
+    om_color_t [NUM_LANES-1:0] dst_factor_s1;
 
     VX_pipe_register #(
         .DATAW  (1 + TAG_WIDTH + 32 * 4 * NUM_LANES),
@@ -97,10 +97,10 @@ module VX_om_blend import VX_om_pkg::*; #(
         .data_out ({valid_s1, tag_s1, src_color_s1, dst_color_s1, src_factor_s1, dst_factor_s1})
     );
 
-    rgba_t [NUM_LANES-1:0] mult_add_color_s2;
-    rgba_t [NUM_LANES-1:0] min_color_s2;
-    rgba_t [NUM_LANES-1:0] max_color_s2;
-    rgba_t [NUM_LANES-1:0] logic_op_color_s2;
+    om_color_t [NUM_LANES-1:0] mult_add_color_s2;
+    om_color_t [NUM_LANES-1:0] min_color_s2;
+    om_color_t [NUM_LANES-1:0] max_color_s2;
+    om_color_t [NUM_LANES-1:0] logic_op_color_s2;
 
     for (genvar i = 0; i < NUM_LANES; ++i) begin : g_blend_multadd
         VX_om_blend_multadd #(
@@ -158,7 +158,7 @@ module VX_om_blend import VX_om_pkg::*; #(
         .data_out ({valid_s2, tag_s2})
     );
 
-    rgba_t [NUM_LANES-1:0] color_out_s2;
+    om_color_t [NUM_LANES-1:0] color_out_s2;
 
     for (genvar i = 0; i < NUM_LANES; ++i) begin : g_blending
         always @(*) begin
@@ -167,29 +167,29 @@ module VX_om_blend import VX_om_pkg::*; #(
                 `VX_OM_BLEND_MODE_ADD,
                 `VX_OM_BLEND_MODE_SUB,
                 `VX_OM_BLEND_MODE_REV_SUB: begin
-                    color_out_s2[i].r = mult_add_color_s2[i].r;
-                    color_out_s2[i].g = mult_add_color_s2[i].g;
-                    color_out_s2[i].b = mult_add_color_s2[i].b;
+                    color_out_s2[i].argb[23:16] = mult_add_color_s2[i].argb[23:16];
+                    color_out_s2[i].argb[15:8] = mult_add_color_s2[i].argb[15:8];
+                    color_out_s2[i].argb[7:0] = mult_add_color_s2[i].argb[7:0];
                     end
                 `VX_OM_BLEND_MODE_MIN: begin
-                    color_out_s2[i].r = min_color_s2[i].r;
-                    color_out_s2[i].g = min_color_s2[i].g;
-                    color_out_s2[i].b = min_color_s2[i].b;
+                    color_out_s2[i].argb[23:16] = min_color_s2[i].argb[23:16];
+                    color_out_s2[i].argb[15:8] = min_color_s2[i].argb[15:8];
+                    color_out_s2[i].argb[7:0] = min_color_s2[i].argb[7:0];
                     end
                 `VX_OM_BLEND_MODE_MAX: begin
-                    color_out_s2[i].r = max_color_s2[i].r;
-                    color_out_s2[i].g = max_color_s2[i].g;
-                    color_out_s2[i].b = max_color_s2[i].b;
+                    color_out_s2[i].argb[23:16] = max_color_s2[i].argb[23:16];
+                    color_out_s2[i].argb[15:8] = max_color_s2[i].argb[15:8];
+                    color_out_s2[i].argb[7:0] = max_color_s2[i].argb[7:0];
                     end
                 `VX_OM_BLEND_MODE_LOGICOP: begin
-                    color_out_s2[i].r = logic_op_color_s2[i].r;
-                    color_out_s2[i].g = logic_op_color_s2[i].g;
-                    color_out_s2[i].b = logic_op_color_s2[i].b;
+                    color_out_s2[i].argb[23:16] = logic_op_color_s2[i].argb[23:16];
+                    color_out_s2[i].argb[15:8] = logic_op_color_s2[i].argb[15:8];
+                    color_out_s2[i].argb[7:0] = logic_op_color_s2[i].argb[7:0];
                     end
                 default: begin
-                    color_out_s2[i].r = 'x;
-                    color_out_s2[i].g = 'x;
-                    color_out_s2[i].b = 'x;
+                    color_out_s2[i].argb[23:16] = 'x;
+                    color_out_s2[i].argb[15:8] = 'x;
+                    color_out_s2[i].argb[7:0] = 'x;
                     end
             endcase
             // Alpha Component
@@ -197,19 +197,19 @@ module VX_om_blend import VX_om_pkg::*; #(
                 `VX_OM_BLEND_MODE_ADD,
                 `VX_OM_BLEND_MODE_SUB,
                 `VX_OM_BLEND_MODE_REV_SUB: begin
-                    color_out_s2[i].a = mult_add_color_s2[i].a;
+                    color_out_s2[i].argb[31:24] = mult_add_color_s2[i].argb[31:24];
                     end
                 `VX_OM_BLEND_MODE_MIN: begin
-                    color_out_s2[i].a = min_color_s2[i].a;
+                    color_out_s2[i].argb[31:24] = min_color_s2[i].argb[31:24];
                     end
                 `VX_OM_BLEND_MODE_MAX: begin
-                    color_out_s2[i].a = max_color_s2[i].a;
+                    color_out_s2[i].argb[31:24] = max_color_s2[i].argb[31:24];
                     end
                 `VX_OM_BLEND_MODE_LOGICOP: begin
-                    color_out_s2[i].a = logic_op_color_s2[i].a;
+                    color_out_s2[i].argb[31:24] = logic_op_color_s2[i].argb[31:24];
                     end
                 default: begin
-                    color_out_s2[i].a = 'x;
+                    color_out_s2[i].argb[31:24] = 'x;
                     end
             endcase
         end

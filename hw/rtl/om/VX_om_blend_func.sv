@@ -1,12 +1,12 @@
 //!/bin/bash
 
 // Copyright © 2019-2023
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,9 +18,9 @@
 module VX_blend_func #(
     parameter INDEX = 0
 ) (
-    input wire [`VX_OM_BLEND_FUNC_BITS-1:0] func, 
-    input wire [3:0][7:0]  src, 
-    input wire [3:0][7:0]  dst, 
+    input wire [`VX_OM_BLEND_FUNC_BITS-1:0] func,
+    input wire [3:0][7:0]  src,
+    input wire [3:0][7:0]  dst,
     input wire [3:0][7:0]  cst,
     output wire [7:0]      result
 );
@@ -57,7 +57,7 @@ module VX_blend_func #(
     end
 
     assign result = result_r;
-        
+
 endmodule
 
 module VX_om_blend_func import VX_om_pkg::*; #(
@@ -66,15 +66,15 @@ module VX_om_blend_func import VX_om_pkg::*; #(
     input wire [`VX_OM_BLEND_FUNC_BITS-1:0] func_rgb,
     input wire [`VX_OM_BLEND_FUNC_BITS-1:0] func_a,
 
-    input rgba_t src_color,
-    input rgba_t dst_color,
-    input rgba_t cst_color,
+    input om_color_t src_color,
+    input om_color_t dst_color,
+    input om_color_t cst_color,
 
-    output rgba_t factor_out
+    output om_color_t factor_out
 );
-    VX_blend_func #(0) blend_func_b (func_rgb, src_color, dst_color, cst_color, factor_out.b);
-    VX_blend_func #(1) blend_func_g (func_rgb, src_color, dst_color, cst_color, factor_out.g);  
-    VX_blend_func #(2) blend_func_r (func_rgb, src_color, dst_color, cst_color, factor_out.r);
-    VX_blend_func #(3) blend_func_a (func_a,   src_color, dst_color, cst_color, factor_out.a);
+    VX_blend_func #(0) blend_func_b (func_rgb, src_color, dst_color, cst_color, factor_out.argb[7:0]);
+    VX_blend_func #(1) blend_func_g (func_rgb, src_color, dst_color, cst_color, factor_out.argb[15:8]);
+    VX_blend_func #(2) blend_func_r (func_rgb, src_color, dst_color, cst_color, factor_out.argb[23:16]);
+    VX_blend_func #(3) blend_func_a (func_a,   src_color, dst_color, cst_color, factor_out.argb[31:24]);
 
 endmodule

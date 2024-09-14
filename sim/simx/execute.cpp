@@ -1486,7 +1486,7 @@ void Emulator::execute(const Instr &instr, uint32_t wid, instr_trace_t *trace) {
           auto f = (pos_face >> 0)  & 0x1;
           auto x = (pos_face >> 1)  & 0x7fff;
           auto y = (pos_face >> 16) & 0x7fff;
-          DT(2, "om-write: cid=" << std::dec << core_->id() << ", wid=" << wid << ", tid=" << t << ", x=" << x << ", y=" << y << ", backface=" << f << ", color=0x" << std::hex << color << ", depth=0x" << depth);
+          DT(2, "om-write: cid=" << std::dec << core_->id() << ", wid=" << wid << ", tid=" << t << ", x=" << x << ", y=" << y << ", backface=" << f << ", color=0x" << std::hex << color << ", depth=0x" << depth << std::dec << " (#" << trace->uuid << ")");
           om_units_.at(trace_data->om_idx)->write(x, y, f, color, depth, trace_data);
         }
       } break;

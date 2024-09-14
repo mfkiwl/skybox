@@ -37,7 +37,7 @@ module VX_om_mem import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     input wire                                      req_rw,
     input wire [NUM_LANES-1:0][`VX_OM_DIM_BITS-1:0] req_pos_x,
     input wire [NUM_LANES-1:0][`VX_OM_DIM_BITS-1:0] req_pos_y,
-    input rgba_t [NUM_LANES-1:0]                    req_color,
+    input om_color_t [NUM_LANES-1:0]                req_color,
     input wire [NUM_LANES-1:0][`VX_OM_DEPTH_BITS-1:0] req_depth,
     input wire [NUM_LANES-1:0][`VX_OM_STENCIL_BITS-1:0] req_stencil,
     input wire [NUM_LANES-1:0]                      req_face,
@@ -48,7 +48,7 @@ module VX_om_mem import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     // Response interface
     output wire                                     rsp_valid,
     output wire [NUM_LANES-1:0]                     rsp_mask,
-    output rgba_t [NUM_LANES-1:0]                   rsp_color,
+    output om_color_t [NUM_LANES-1:0]               rsp_color,
     output wire [NUM_LANES-1:0][`VX_OM_DEPTH_BITS-1:0] rsp_depth,
     output wire [NUM_LANES-1:0][`VX_OM_STENCIL_BITS-1:0] rsp_stencil,
     output wire [TAG_WIDTH-1:0]                     rsp_tag,

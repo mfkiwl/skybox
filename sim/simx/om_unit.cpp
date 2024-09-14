@@ -205,8 +205,9 @@ public:
     }
 
     for (int i = 0, n = pending_reqs_.size(); i < n; ++i) {
-      if (pending_reqs_.contains(i))
+      if (pending_reqs_.contains(i)) {
         perf_stats_.latency += pending_reqs_.at(i).count;
+      }
     }
 
     // check input trace
@@ -282,7 +283,7 @@ private:
     uint32_t count;
   };
 
-  OMUnit*      simobject_;
+  OMUnit*       simobject_;
   const Arch&   arch_;
   const DCRS&   dcrs_;
   std::unordered_map<uint32_t, uint32_t> csrs_;

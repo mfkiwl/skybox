@@ -1,12 +1,12 @@
 //!/bin/bash
 
 // Copyright © 2019-2023
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,49 +23,49 @@ module VX_om_blend_minmax import VX_om_pkg::*; #(
 
     input wire enable,
 
-    input rgba_t src_color,
-    input rgba_t dst_color,
+    input om_color_t src_color,
+    input om_color_t dst_color,
 
-    output rgba_t min_out,
-    output rgba_t max_out
+    output om_color_t min_out,
+    output om_color_t max_out
 );
 
     `UNUSED_VAR (reset)
 
-    rgba_t tmp_min;
-    rgba_t tmp_max;
+    om_color_t tmp_min;
+    om_color_t tmp_max;
 
-    always @(*) begin   
-        if (src_color.r > dst_color.r) begin
-            tmp_max.r = src_color.r;
-            tmp_min.r = dst_color.r;
+    always @(*) begin
+        if (src_color.argb[23:16] > dst_color.argb[23:16]) begin
+            tmp_max.argb[23:16] = src_color.argb[23:16];
+            tmp_min.argb[23:16] = dst_color.argb[23:16];
         end else begin
-            tmp_max.r = dst_color.r;
-            tmp_min.r = src_color.r;
+            tmp_max.argb[23:16] = dst_color.argb[23:16];
+            tmp_min.argb[23:16] = src_color.argb[23:16];
         end
 
-        if (src_color.g > dst_color.g) begin
-            tmp_max.g = src_color.g;
-            tmp_min.g = dst_color.g;
+        if (src_color.argb[15:8] > dst_color.argb[15:8]) begin
+            tmp_max.argb[15:8] = src_color.argb[15:8];
+            tmp_min.argb[15:8] = dst_color.argb[15:8];
         end else begin
-            tmp_max.g = dst_color.g;
-            tmp_min.g = src_color.g;
+            tmp_max.argb[15:8] = dst_color.argb[15:8];
+            tmp_min.argb[15:8] = src_color.argb[15:8];
         end
 
-        if (src_color.b > dst_color.b) begin
-            tmp_max.b = src_color.b;
-            tmp_min.b = dst_color.b;
+        if (src_color.argb[7:0] > dst_color.argb[7:0]) begin
+            tmp_max.argb[7:0] = src_color.argb[7:0];
+            tmp_min.argb[7:0] = dst_color.argb[7:0];
         end else begin
-            tmp_max.b = dst_color.b;
-            tmp_min.b = src_color.b;
+            tmp_max.argb[7:0] = dst_color.argb[7:0];
+            tmp_min.argb[7:0] = src_color.argb[7:0];
         end
 
-        if (src_color.a > dst_color.a) begin
-            tmp_max.a = src_color.a;
-            tmp_min.a = dst_color.a;
+        if (src_color.argb[31:24] > dst_color.argb[31:24]) begin
+            tmp_max.argb[31:24] = src_color.argb[31:24];
+            tmp_min.argb[31:24] = dst_color.argb[31:24];
         end else begin
-            tmp_max.a = dst_color.a;
-            tmp_min.a = src_color.a;
+            tmp_max.argb[31:24] = dst_color.argb[31:24];
+            tmp_min.argb[31:24] = src_color.argb[31:24];
         end
     end
 

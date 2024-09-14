@@ -1,12 +1,12 @@
 //!/bin/bash
 
 // Copyright © 2019-2023
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,13 +26,13 @@ module VX_om_blend_multadd import VX_om_pkg::*; #(
     input wire [`VX_OM_BLEND_MODE_BITS-1:0] mode_rgb,
     input wire [`VX_OM_BLEND_MODE_BITS-1:0] mode_a,
 
-    input rgba_t src_color,
-    input rgba_t dst_color,
+    input om_color_t src_color,
+    input om_color_t dst_color,
 
-    input rgba_t src_factor,
-    input rgba_t dst_factor,
+    input om_color_t src_factor,
+    input om_color_t dst_factor,
 
-    output rgba_t color_out
+    output om_color_t color_out
 );
 
     `STATIC_ASSERT((LATENCY == 3), ("invalid parameter"))
@@ -42,19 +42,19 @@ module VX_om_blend_multadd import VX_om_pkg::*; #(
 
     reg [15:0] prod_src_r, prod_src_g, prod_src_b, prod_src_a;
     reg [15:0] prod_dst_r, prod_dst_g, prod_dst_b, prod_dst_a;
-    reg [16:0] sum_r, sum_g, sum_b, sum_a;    
+    reg [16:0] sum_r, sum_g, sum_b, sum_a;
 
-    always @(posedge clk) begin    
+    always @(posedge clk) begin
         if (enable) begin
-            prod_src_r <= src_color.r * src_factor.r;
-            prod_src_g <= src_color.g * src_factor.g;
-            prod_src_b <= src_color.b * src_factor.b;
-            prod_src_a <= src_color.a * src_factor.a;
+            prod_src_r <= src_color.argb[23:16] * src_factor.argb[23:16];
+            prod_src_g <= src_color.argb[15:8] * src_factor.argb[15:8];
+            prod_src_b <= src_color.argb[7:0] * src_factor.argb[7:0];
+            prod_src_a <= src_color.argb[31:24] * src_factor.argb[31:24];
 
-            prod_dst_r <= dst_color.r * dst_factor.r;
-            prod_dst_g <= dst_color.g * dst_factor.g;
-            prod_dst_b <= dst_color.b * dst_factor.b;
-            prod_dst_a <= dst_color.a * dst_factor.a;
+            prod_dst_r <= dst_color.argb[23:16] * dst_factor.argb[23:16];
+            prod_dst_g <= dst_color.argb[15:8] * dst_factor.argb[15:8];
+            prod_dst_b <= dst_color.argb[7:0] * dst_factor.argb[7:0];
+            prod_dst_a <= dst_color.argb[31:24] * dst_factor.argb[31:24];
 
             case (mode_rgb)
                 `VX_OM_BLEND_MODE_ADD: begin
@@ -65,7 +65,7 @@ module VX_om_blend_multadd import VX_om_pkg::*; #(
                 `VX_OM_BLEND_MODE_SUB: begin
                     sum_r <= prod_src_r - prod_dst_r + 16'h80;
                     sum_g <= prod_src_g - prod_dst_g + 16'h80;
-                    sum_b <= prod_src_b - prod_dst_b + 16'h80; 
+                    sum_b <= prod_src_b - prod_dst_b + 16'h80;
                 end
                 `VX_OM_BLEND_MODE_REV_SUB: begin
                     sum_r <= prod_dst_r - prod_src_r + 16'h80;
@@ -126,11 +126,11 @@ module VX_om_blend_multadd import VX_om_pkg::*; #(
 
     // divide by 255
 
-    rgba_t result;
-    assign result.r = 8'((clamp_r + (clamp_r >> 8)) >> 8);
-    assign result.g = 8'((clamp_g + (clamp_g >> 8)) >> 8);
-    assign result.b = 8'((clamp_b + (clamp_b >> 8)) >> 8);
-    assign result.a = 8'((clamp_a + (clamp_a >> 8)) >> 8);
+    om_color_t result;
+    assign result.argb[31:24] = 8'((clamp_a + (clamp_a >> 8)) >> 8);
+    assign result.argb[23:16] = 8'((clamp_r + (clamp_r >> 8)) >> 8);
+    assign result.argb[15:8]  = 8'((clamp_g + (clamp_g >> 8)) >> 8);
+    assign result.argb[7:0]   = 8'((clamp_b + (clamp_b >> 8)) >> 8);
 
     VX_pipe_register #(
         .DATAW (32)

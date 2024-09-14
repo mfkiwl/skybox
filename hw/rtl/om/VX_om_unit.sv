@@ -34,9 +34,9 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     VX_dcr_bus_if.slave     dcr_bus_if,
     VX_om_bus_if.slave      om_bus_if
 );
-    localparam MEM_TAG_WIDTH    = `UUID_WIDTH + NUM_LANES * (`VX_OM_DIM_BITS + `VX_OM_DIM_BITS + 32 + `VX_OM_DEPTH_BITS + 1);
-    localparam DS_TAG_WIDTH     = NUM_LANES * (`VX_OM_DIM_BITS + `VX_OM_DIM_BITS + 1 + 1 + 32);
-    localparam BLEND_TAG_WIDTH  = NUM_LANES * (`VX_OM_DIM_BITS + `VX_OM_DIM_BITS + 1);
+    localparam MEM_TAG_WIDTH   = `UUID_WIDTH + NUM_LANES * (`VX_OM_DIM_BITS + `VX_OM_DIM_BITS + 32 + `VX_OM_DEPTH_BITS + 1);
+    localparam DS_TAG_WIDTH    = `UUID_WIDTH + NUM_LANES * (`VX_OM_DIM_BITS + `VX_OM_DIM_BITS + 1 + 1 + 32);
+    localparam BLEND_TAG_WIDTH = `UUID_WIDTH + NUM_LANES * (`VX_OM_DIM_BITS + `VX_OM_DIM_BITS + 1);
 
     // DCRs
 
@@ -59,7 +59,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     wire                                    mem_req_rw, mem_req_rw_r;
     wire [NUM_LANES-1:0][`VX_OM_DIM_BITS-1:0] mem_req_pos_x, mem_req_pos_x_r;
     wire [NUM_LANES-1:0][`VX_OM_DIM_BITS-1:0] mem_req_pos_y, mem_req_pos_y_r;
-    rgba_t [NUM_LANES-1:0]                  mem_req_color, mem_req_color_r;
+    om_color_t [NUM_LANES-1:0]              mem_req_color, mem_req_color_r;
     wire [NUM_LANES-1:0][`VX_OM_DEPTH_BITS-1:0] mem_req_depth, mem_req_depth_r;
     wire [NUM_LANES-1:0][`VX_OM_STENCIL_BITS-1:0] mem_req_stencil, mem_req_stencil_r;
     wire [NUM_LANES-1:0]                    mem_req_face, mem_req_face_r;
@@ -68,7 +68,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
 
     wire                                    mem_rsp_valid;
     wire [NUM_LANES-1:0]                    mem_rsp_mask;
-    rgba_t [NUM_LANES-1:0]                  mem_rsp_color;
+    om_color_t [NUM_LANES-1:0]              mem_rsp_color;
     wire [NUM_LANES-1:0][`VX_OM_DEPTH_BITS-1:0] mem_rsp_depth;
     wire [NUM_LANES-1:0][`VX_OM_STENCIL_BITS-1:0] mem_rsp_stencil;
     wire [MEM_TAG_WIDTH-1:0]                mem_rsp_tag;
@@ -166,9 +166,9 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     wire [BLEND_TAG_WIDTH-1:0] blend_tag_out;
     wire                    blend_ready_out;
 
-    rgba_t [NUM_LANES-1:0]  blend_src_color;
-    rgba_t [NUM_LANES-1:0]  blend_dst_color;
-    rgba_t [NUM_LANES-1:0]  blend_color_out;
+    om_color_t [NUM_LANES-1:0]  blend_src_color;
+    om_color_t [NUM_LANES-1:0]  blend_dst_color;
+    om_color_t [NUM_LANES-1:0]  blend_color_out;
 
     VX_om_blend #(
         .INSTANCE_ID ($sformatf("%s-blend", INSTANCE_ID)),
@@ -224,30 +224,39 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
 
     wire [NUM_LANES-1:0][`VX_OM_DIM_BITS-1:0] ds_write_pos_x, ds_write_pos_y;
     wire [NUM_LANES-1:0] ds_write_face, ds_rsp_mask;
-    rgba_t [NUM_LANES-1:0] ds_write_color;
+    om_color_t [NUM_LANES-1:0] ds_write_color;
+    wire [`UUID_WIDTH-1:0] ds_write_uuid;
 
     wire [NUM_LANES-1:0][`VX_OM_DIM_BITS-1:0] blend_write_pos_x, blend_write_pos_y;
     wire [NUM_LANES-1:0] blend_rsp_mask;
+    wire [`UUID_WIDTH-1:0] blend_write_uuid;
+
+    wire [MEM_TAG_WIDTH-1:0] def_mem_req_tag, ds_write_tag, blend_write_tag;
 
     wire pending_reads_full;
 
-    assign mem_req_tag = {om_bus_if.req_data.uuid, om_bus_if.req_data.pos_x, om_bus_if.req_data.pos_y, om_bus_if.req_data.color, om_bus_if.req_data.depth, om_bus_if.req_data.face};
+    assign def_mem_req_tag = {om_bus_if.req_data.uuid, om_bus_if.req_data.pos_x, om_bus_if.req_data.pos_y, om_bus_if.req_data.color, om_bus_if.req_data.depth, om_bus_if.req_data.face};
     assign {mem_rsp_uuid, mem_rsp_pos_x, mem_rsp_pos_y, blend_src_color, ds_depth_ref, ds_face} = mem_rsp_tag;
 
-    assign ds_tag_in = {mem_rsp_pos_x, mem_rsp_pos_y, mem_rsp_mask, ds_face, blend_src_color};
-    assign {ds_write_pos_x, ds_write_pos_y, ds_rsp_mask, ds_write_face, ds_write_color} = ds_tag_out;
+    assign ds_tag_in = {mem_rsp_pos_x, mem_rsp_pos_y, mem_rsp_mask, ds_face, blend_src_color, mem_rsp_uuid};
+    assign {ds_write_pos_x, ds_write_pos_y, ds_rsp_mask, ds_write_face, ds_write_color, ds_write_uuid} = ds_tag_out;
+    assign ds_write_tag = {ds_write_uuid, (MEM_TAG_WIDTH-`UUID_WIDTH)'(0)};
 
-    assign blend_tag_in = {mem_rsp_pos_x, mem_rsp_pos_y, mem_rsp_mask};
-    assign {blend_write_pos_x, blend_write_pos_y, blend_rsp_mask} = blend_tag_out;
+    assign blend_tag_in = {mem_rsp_pos_x, mem_rsp_pos_y, mem_rsp_mask, mem_rsp_uuid};
+    assign {blend_write_pos_x, blend_write_pos_y, blend_rsp_mask, blend_write_uuid} = blend_tag_out;
+    assign blend_write_tag = {blend_write_uuid, (MEM_TAG_WIDTH-`UUID_WIDTH)'(0)};
 
-    wire color_write = write_bypass && om_bus_if.req_valid;
+    wire color_write = om_bus_if.req_valid && write_bypass;
 
-    wire ds_blend_read = mem_readen && om_bus_if.req_valid && ~pending_reads_full;
+    wire ds_blend_read = om_bus_if.req_valid && mem_readen && ~pending_reads_full;
 
-    wire ds_blend_write = (ds_color_writeen && blend_writeen) ? (ds_valid_out && blend_valid_out) :
-                            (ds_color_writeen ? ds_valid_out :
-                                (blend_writeen ? blend_valid_out :
-                                    1'b0));
+    wire ds_write = ds_color_writeen && ds_valid_out;
+
+    wire blend_write = blend_writeen && blend_valid_out;
+
+    wire ds_blend_write_any = ds_write || blend_write;
+
+    wire ds_blend_write_sync = (ds_color_writeen && blend_writeen) ? (ds_valid_out && blend_valid_out) : ds_blend_write_any;
 
     wire [NUM_LANES-1:0] ds_read_mask, ds_write_mask;
     wire [NUM_LANES-1:0] blend_read_mask, blend_write_mask;
@@ -262,20 +271,21 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
         assign ds_color_write_mask[i] = ds_rsp_mask[i] && ds_pass_out[i];
     end
 
-    assign mem_req_valid    = ds_blend_write || ds_blend_read || color_write;
+    assign mem_req_valid    = ds_blend_write_sync || ds_blend_read || color_write;
     assign mem_req_ds_mask  = ds_valid_out ? ds_write_mask : ds_read_mask;
     assign mem_req_c_mask   = write_bypass ? color_bypass_mask : (blend_valid_out ? blend_write_mask : (ds_valid_out ? ds_color_write_mask : blend_read_mask));
-    assign mem_req_rw       = ds_blend_write || write_bypass;
+    assign mem_req_rw       = ds_blend_write_any || write_bypass;
     assign mem_req_face     = ds_write_face;
     assign mem_req_pos_x    = ds_valid_out ? ds_write_pos_x : (blend_valid_out ? blend_write_pos_x : om_bus_if.req_data.pos_x);
     assign mem_req_pos_y    = ds_valid_out ? ds_write_pos_y : (blend_valid_out ? blend_write_pos_y : om_bus_if.req_data.pos_y);
     assign mem_req_color    = blend_enable ? blend_color_out : (ds_enable ? ds_write_color : om_bus_if.req_data.color);
     assign mem_req_depth    = ds_depth_out;
     assign mem_req_stencil  = ds_stencil_out;
+    assign mem_req_tag      = ds_valid_out ? ds_write_tag : (blend_valid_out ? blend_write_tag : def_mem_req_tag);
 
+    assign om_bus_if.req_ready = mem_req_ready && ~ds_blend_write_any && ~(mem_readen && pending_reads_full);
     assign ds_ready_out     = mem_req_ready && (~blend_writeen || blend_valid_out);
     assign blend_ready_out  = mem_req_ready && (~ds_color_writeen || ds_valid_out);
-    assign om_bus_if.req_ready = mem_req_ready && ~ds_blend_write && ~pending_reads_full;
 
     assign ds_valid_in      = ds_enable && mem_rsp_valid && (~blend_enable || blend_ready_in);
     assign blend_valid_in   = blend_enable && mem_rsp_valid && (~ds_enable || ds_ready_in);
@@ -312,7 +322,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     wire mem_req_valid_unqual_r;
 
     VX_elastic_buffer #(
-        .DATAW   (1 + NUM_LANES * (1 + 1 + 2 * `VX_OM_DIM_BITS + $bits(rgba_t) + `VX_OM_DEPTH_BITS + `VX_OM_STENCIL_BITS + 1) + MEM_TAG_WIDTH),
+        .DATAW   (1 + NUM_LANES * (1 + 1 + 2 * `VX_OM_DIM_BITS + $bits(om_color_t) + `VX_OM_DEPTH_BITS + `VX_OM_STENCIL_BITS + 1) + MEM_TAG_WIDTH),
         .OUT_REG (1)
     ) mem_req_buf (
         .clk       (clk),
@@ -416,7 +426,7 @@ module VX_om_unit_top import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     input  wire [NUM_LANES-1:0]             om_req_mask,
     input  wire [NUM_LANES-1:0][`VX_OM_DIM_BITS-1:0] om_req_pos_x,
     input  wire [NUM_LANES-1:0][`VX_OM_DIM_BITS-1:0] om_req_pos_y,
-    input  rgba_t [NUM_LANES-1:0]           om_req_color,
+    input  om_color_t [NUM_LANES-1:0]       om_req_color,
     input  wire [NUM_LANES-1:0][`VX_OM_DEPTH_BITS-1:0] om_req_depth,
     input  wire [NUM_LANES-1:0]             om_req_face,
     output wire                             om_req_ready,
