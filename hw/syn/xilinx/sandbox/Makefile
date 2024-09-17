@@ -19,9 +19,6 @@ KERNEL ?= fibonacci
 NCPUS := $(shell lscpu | grep "^Core(s) per socket:" | awk '{print $$4}')
 JOBS ?= $(shell echo $$(( $(NCPUS) > $(MAX_JOBS) ? $(MAX_JOBS) : $(NCPUS) )))
 
-COE_FILE := $(shell realpath kernel.bin.coe)
-ESCAPED_COE_FILE := $(shell echo "$(COE_FILE)" | sed -e 's/[\/&]/\\&/g')
-
 # include paths
 FPU_INCLUDE = -I$(RTL_DIR)/fpu
 ifneq (,$(findstring FPU_FPNEW,$(CONFIGS)))
@@ -47,9 +44,6 @@ CFLAGS += -DSTACK_BASE_ADDR=32\'hFF000
 
 all: build
 
-project2.tcl: project.tcl
-	@sed -e "s/@COE_FILE@/$(ESCAPED_COE_FILE)/g" $< > $@
-
 $(KERNEL).bin:
 	$(MAKE) -C $(ROOT_DIR)/kernel clean
 	STACK_BASE_ADDR=0xFF000 $(MAKE) -C $(ROOT_DIR)/kernel
@@ -65,13 +59,14 @@ project_1/sources.txt:
 	mkdir -p project_1
 	$(SCRIPT_DIR)/gen_sources.sh $(CFLAGS) -P -Cproject_1/src -Oproject_1/sources.txt
 
-build: project_1/project_1.xpr
-project_1/project_1.xpr: project_1/sources.txt kernel.bin.coe project2.tcl
-	MAX_JOBS=$(JOBS) $(VIVADO) -mode batch -source project2.tcl -tclargs $(DEVICE) project_1/sources.txt $(SCRIPT_DIR)
+build: done.dcp
+done.dcp: project_1/sources.txt kernel.bin.coe project.tcl
+	MAX_JOBS=$(JOBS) $(VIVADO) -mode batch -source project.tcl -tclargs $(DEVICE) project_1/sources.txt $(SCRIPT_DIR)
+	echo done > done.dcp
 
 run: project_1/project_1.xpr
 	$(VIVADO) project_1/project_1.xpr &
 
 clean:
-	rm -rf project_1 project2.tcl $(KERNEL).bin kernel.bin.coe
-	rm -rf .Xil *.log *.jou
+	rm -rf project_1 project1.tcl $(KERNEL).bin kernel.bin.coe
+	rm -rf .Xil *.log *.jou *.dcp *.rpt
