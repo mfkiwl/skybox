@@ -15,14 +15,20 @@
 
 `ifdef EXT_TEX_ENABLE
 `include "VX_tex_define.vh"
+`undef ANY_GFX_ENABLE
+`define ANY_GFX_ENABLE
 `endif
 
 `ifdef EXT_RASTER_ENABLE
 `include "VX_raster_define.vh"
+`undef ANY_GFX_ENABLE
+`define ANY_GFX_ENABLE
 `endif
 
 `ifdef EXT_OM_ENABLE
 `include "VX_om_define.vh"
+`undef ANY_GFX_ENABLE
+`define ANY_GFX_ENABLE
 `endif
 
 module VX_cluster import VX_gpu_pkg::*; #(
@@ -63,6 +69,20 @@ module VX_cluster import VX_gpu_pkg::*; #(
     assign mem_perf_tmp_if.mem     = mem_perf_if.mem;
 `endif
 
+    VX_mem_bus_if #(
+        .DATA_SIZE (L2_WORD_SIZE),
+        .TAG_WIDTH (L2_TAG_WIDTH)
+    ) l2_mem_bus_if[L2_NUM_REQS]();
+
+    VX_mem_bus_if #(
+        .DATA_SIZE (`L1_LINE_SIZE),
+        .TAG_WIDTH (L1_MEM_ARB_TAG_WIDTH)
+    ) per_socket_mem_bus_if[`NUM_SOCKETS]();
+
+    for (genvar i = 0; i < `NUM_SOCKETS; ++i) begin : g_l2_mem_bus_if
+        `ASSIGN_VX_MEM_BUS_IF_X (l2_mem_bus_if[L1_MEM_L2_IDX + i], per_socket_mem_bus_if[i], L2_TAG_WIDTH, L1_MEM_ARB_TAG_WIDTH);
+    end
+
 `ifdef GBAR_ENABLE
 
     VX_gbar_bus_if per_socket_gbar_bus_if[`NUM_SOCKETS]();
@@ -87,6 +107,8 @@ module VX_cluster import VX_gpu_pkg::*; #(
     );
 
 `endif
+
+`ifdef ANY_GFX_ENABLE
 
 `ifdef EXT_RASTER_ENABLE
 
@@ -125,20 +147,6 @@ module VX_cluster import VX_gpu_pkg::*; #(
 
 `endif
 
-    VX_mem_bus_if #(
-        .DATA_SIZE (L2_WORD_SIZE),
-        .TAG_WIDTH (L2_TAG_WIDTH)
-    ) l2_mem_bus_if[L2_NUM_REQS]();
-
-    VX_mem_bus_if #(
-        .DATA_SIZE (`L1_LINE_SIZE),
-        .TAG_WIDTH (L1_MEM_ARB_TAG_WIDTH)
-    ) per_socket_mem_bus_if[`NUM_SOCKETS]();
-
-    for (genvar i = 0; i < `NUM_SOCKETS; ++i) begin : g_l2_mem_bus_if
-        `ASSIGN_VX_MEM_BUS_IF_X (l2_mem_bus_if[L1_MEM_L2_IDX + i], per_socket_mem_bus_if[i], L2_TAG_WIDTH, L1_MEM_ARB_TAG_WIDTH);
-    end
-
     `RESET_RELAY (graphics_reset, reset);
 
     VX_graphics #(
@@ -176,6 +184,7 @@ module VX_cluster import VX_gpu_pkg::*; #(
 
         .dcr_bus_if (dcr_bus_if)
     );
+`endif
 
     `RESET_RELAY (l2_reset, reset);
 

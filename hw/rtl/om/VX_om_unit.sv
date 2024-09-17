@@ -341,6 +341,17 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
 
     assign write_req_canceled = mem_req_valid_unqual_r && mem_req_rw_r && is_degenerate_req && mem_req_ready_r;
 
+`ifdef DBG_SCOPE_OM
+`ifdef CHIPSCOPE
+    ila_tex ila_tex_inst (
+        .clk    (clk),
+        .probe0 ({cache_bus_if[0].rsp_data.data, cache_bus_if[0].rsp_data.tag, cache_bus_if[0].rsp_ready, cache_bus_if[0].rsp_valid, cache_bus_if[0].req_data.tag, cache_bus_if[0].req_data.addr, cache_bus_if[0].req_data.rw, cache_bus_if[0].req_valid, cache_bus_if[0].req_ready}),
+        .probe1 ({dcr_bus_if.write_valid, dcr_bus_if.write_addr, dcr_bus_if.write_data}),
+        .probe2 ({om_bus_if.req_valid, om_bus_if.req_data, om_bus_if.req_ready})
+    );
+`endif
+`endif
+
 `ifdef PERF_ENABLE
 
     wire [`CLOG2(OCACHE_NUM_REQS+1)-1:0] perf_mem_rd_req_per_cycle;
@@ -405,98 +416,5 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     assign perf_om_if.stall_cycles = perf_stall_cycles;
 
 `endif
-
-endmodule
-
-///////////////////////////////////////////////////////////////////////////////
-
-module VX_om_unit_top import VX_gpu_pkg::*; import VX_om_pkg::*; #(
-    parameter `STRING INSTANCE_ID = "",
-    parameter NUM_LANES = `NUM_THREADS
-) (
-    input wire                              clk,
-    input wire                              reset,
-
-    input wire                              dcr_write_valid,
-    input wire [`VX_DCR_ADDR_WIDTH-1:0]     dcr_write_addr,
-    input wire [`VX_DCR_DATA_WIDTH-1:0]     dcr_write_data,
-
-    input  wire                             om_req_valid,
-    input  wire [`UUID_WIDTH-1:0]           om_req_uuid,
-    input  wire [NUM_LANES-1:0]             om_req_mask,
-    input  wire [NUM_LANES-1:0][`VX_OM_DIM_BITS-1:0] om_req_pos_x,
-    input  wire [NUM_LANES-1:0][`VX_OM_DIM_BITS-1:0] om_req_pos_y,
-    input  om_color_t [NUM_LANES-1:0]       om_req_color,
-    input  wire [NUM_LANES-1:0][`VX_OM_DEPTH_BITS-1:0] om_req_depth,
-    input  wire [NUM_LANES-1:0]             om_req_face,
-    output wire                             om_req_ready,
-
-    output wire [OCACHE_NUM_REQS-1:0]       cache_req_valid,
-    output wire [OCACHE_NUM_REQS-1:0]       cache_req_rw,
-    output wire [OCACHE_NUM_REQS-1:0][OCACHE_WORD_SIZE-1:0] cache_req_byteen,
-    output wire [OCACHE_NUM_REQS-1:0][OCACHE_ADDR_WIDTH-1:0] cache_req_addr,
-    output wire [OCACHE_NUM_REQS-1:0][OCACHE_WORD_SIZE*8-1:0] cache_req_data,
-    output wire [OCACHE_NUM_REQS-1:0][OCACHE_TAG_WIDTH-1:0] cache_req_tag,
-    input  wire [OCACHE_NUM_REQS-1:0]       cache_req_ready,
-
-    input wire  [OCACHE_NUM_REQS-1:0]       cache_rsp_valid,
-    input wire  [OCACHE_NUM_REQS-1:0][OCACHE_WORD_SIZE*8-1:0] cache_rsp_data,
-    input wire  [OCACHE_NUM_REQS-1:0][OCACHE_TAG_WIDTH-1:0] cache_rsp_tag,
-    output wire [OCACHE_NUM_REQS-1:0]       cache_rsp_ready
-);
-
-    VX_om_perf_if perf_om_if();
-
-    VX_dcr_bus_if dcr_bus_if();
-
-    assign dcr_bus_if.write_valid = dcr_write_valid;
-    assign dcr_bus_if.write_addr = dcr_write_addr;
-    assign dcr_bus_if.write_data = dcr_write_data;
-
-    VX_om_bus_if #(
-        .NUM_LANES (NUM_LANES)
-    ) om_bus_if();
-
-    assign om_bus_if.req_valid = om_req_valid;
-    assign om_bus_if.req_data.uuid = om_req_uuid;
-    assign om_bus_if.req_data.mask = om_req_mask;
-    assign om_bus_if.req_data.pos_x = om_req_pos_x;
-    assign om_bus_if.req_data.pos_y = om_req_pos_y;
-    assign om_bus_if.req_data.color = om_req_color;
-    assign om_bus_if.req_data.depth = om_req_depth;
-    assign om_bus_if.req_data.face = om_req_face;
-    assign om_req_ready = om_bus_if.req_ready;
-
-    VX_mem_bus_if #(
-        .DATA_SIZE (OCACHE_WORD_SIZE),
-        .TAG_WIDTH (OCACHE_TAG_WIDTH)
-    ) cache_bus_if[OCACHE_NUM_REQS]();
-
-    assign cache_req_valid = cache_bus_if[0].req_valid;
-    assign cache_req_rw = cache_bus_if[0].req_data.rw;
-    assign cache_req_byteen = cache_bus_if[0].req_data.byteen;
-    assign cache_req_addr = cache_bus_if[0].req_data.addr;
-    assign cache_req_data = cache_bus_if[0].req_data.data;
-    assign cache_req_tag = cache_bus_if[0].req_data.tag;
-    assign cache_bus_if[0].req_ready = cache_req_ready;
-
-    assign cache_bus_if[0].rsp_valid = cache_rsp_valid;
-    assign cache_bus_if[0].rsp_data.tag = cache_rsp_tag;
-    assign cache_bus_if[0].rsp_data.data = cache_rsp_data;
-    assign cache_rsp_ready = cache_bus_if[0].rsp_ready;
-
-    VX_om_unit #(
-        .INSTANCE_ID (INSTANCE_ID),
-        .NUM_LANES   (NUM_LANES)
-    ) om_unit (
-        .clk           (clk),
-        .reset         (reset),
-    `ifdef PERF_ENABLE
-        .perf_om_if   (perf_om_if),
-    `endif
-        .dcr_bus_if    (dcr_bus_if),
-        .om_bus_if    (om_bus_if),
-        .cache_bus_if  (cache_bus_if)
-    );
 
 endmodule
