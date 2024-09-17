@@ -343,7 +343,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
 
 `ifdef DBG_SCOPE_OM
 `ifdef CHIPSCOPE
-    ila_tex ila_tex_inst (
+    ila_om ila_om_inst (
         .clk    (clk),
         .probe0 ({cache_bus_if[0].rsp_data.data, cache_bus_if[0].rsp_data.tag, cache_bus_if[0].rsp_ready, cache_bus_if[0].rsp_valid, cache_bus_if[0].req_data.tag, cache_bus_if[0].req_data.addr, cache_bus_if[0].req_data.rw, cache_bus_if[0].req_valid, cache_bus_if[0].req_ready}),
         .probe1 ({dcr_bus_if.write_valid, dcr_bus_if.write_addr, dcr_bus_if.write_data}),
