@@ -504,7 +504,7 @@ int main(int argc, char *argv[]) {
 
   if (reference_file) {
      auto reference_file_s = graphics::ResolveFilePath(reference_file, ASSETS_PATHS);
-    auto errors = CompareImages(output_file, reference_file_s.c_str(), FORMAT_A8R8G8B8, 1);
+    auto errors = CompareImages(output_file, reference_file_s.c_str(), FORMAT_A8R8G8B8);
     if (0 == errors) {
       std::cout << "PASSED!" << std::endl;
     } else {
