@@ -355,6 +355,8 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
             .bus_out(scope_bus_out)
         );
     end
+`else
+    `SCOPE_IO_UNUSED_W(0)
 `endif
 `ifdef CHIPSCOPE
     ila_raster ila_raster_inst (

@@ -132,10 +132,10 @@ if { $chipscope == 1 } {
                              CONFIG.C_EN_STRG_QUAL {1} \
                              CONFIG.C_DATA_DEPTH {8192} \
                              CONFIG.C_NUM_OF_PROBES {4} \
-                             CONFIG.C_PROBE0_WIDTH {128} \
-                             CONFIG.C_PROBE1_WIDTH {64} \
-                             CONFIG.C_PROBE2_WIDTH {256} \
-                             CONFIG.C_PROBE3_WIDTH {128} \
+                             CONFIG.C_PROBE0_WIDTH {80} \
+                             CONFIG.C_PROBE1_WIDTH {48} \
+                             CONFIG.C_PROBE2_WIDTH {144} \
+                             CONFIG.C_PROBE3_WIDTH {72} \
                              CONFIG.ALL_PROBE_SAME_MU {false} \
                              CONFIG.ALL_PROBE_SAME_MU_CNT {2} \
                         ] [get_ips ila_tex]
@@ -147,9 +147,9 @@ if { $chipscope == 1 } {
                              CONFIG.C_EN_STRG_QUAL {1} \
                              CONFIG.C_DATA_DEPTH {8192} \
                              CONFIG.C_NUM_OF_PROBES {3} \
-                             CONFIG.C_PROBE0_WIDTH {128} \
-                             CONFIG.C_PROBE1_WIDTH {64} \
-                             CONFIG.C_PROBE2_WIDTH {256} \
+                             CONFIG.C_PROBE0_WIDTH {80} \
+                             CONFIG.C_PROBE1_WIDTH {48} \
+                             CONFIG.C_PROBE2_WIDTH {184} \
                              CONFIG.ALL_PROBE_SAME_MU {false} \
                              CONFIG.ALL_PROBE_SAME_MU_CNT {2} \
                         ] [get_ips ila_om]
@@ -161,8 +161,8 @@ if { $chipscope == 1 } {
                              CONFIG.C_EN_STRG_QUAL {1} \
                              CONFIG.C_DATA_DEPTH {8192} \
                              CONFIG.C_NUM_OF_PROBES {2} \
-                             CONFIG.C_PROBE0_WIDTH {128} \
-                             CONFIG.C_PROBE1_WIDTH {128} \
+                             CONFIG.C_PROBE0_WIDTH {80} \
+                             CONFIG.C_PROBE1_WIDTH {8} \
                              CONFIG.ALL_PROBE_SAME_MU {false} \
                              CONFIG.ALL_PROBE_SAME_MU_CNT {2} \
                         ] [get_ips ila_raster]

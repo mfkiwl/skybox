@@ -221,7 +221,7 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
         .probe0 ({cache_bus_if[0].rsp_data.data, cache_bus_if[0].rsp_data.tag, cache_bus_if[0].rsp_ready, cache_bus_if[0].rsp_valid, cache_bus_if[0].req_data.tag, cache_bus_if[0].req_data.addr, cache_bus_if[0].req_data.rw, cache_bus_if[0].req_valid, cache_bus_if[0].req_ready}),
         .probe1 ({dcr_bus_if.write_valid, dcr_bus_if.write_addr, dcr_bus_if.write_data}),
         .probe2 ({tex_bus_if.req_valid, tex_bus_if.req_data, tex_bus_if.req_ready}),
-        .probe2 ({tex_bus_if.rsp_valid, tex_bus_if.rsp_data, tex_bus_if.rsp_ready})
+        .probe3 ({tex_bus_if.rsp_valid, tex_bus_if.rsp_data, tex_bus_if.rsp_ready})
     );
 `endif
 `endif
