@@ -226,9 +226,9 @@ module VX_om_mem import VX_gpu_pkg::*; import VX_om_pkg::*; #(
         .core_req_flags ('0),
         .core_req_data  (mreq_data_r),
         .core_req_tag   (mreq_tag_r),
-        `UNUSED_PIN (core_req_empty),
         .core_req_ready (mreq_ready_r),
-        .core_write_notify  (write_notify),
+        .core_req_wr_notify (write_notify),
+        `UNUSED_PIN (core_req_empty),
 
         // Output response
         .core_rsp_valid (mrsp_valid),

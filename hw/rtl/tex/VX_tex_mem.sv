@@ -142,7 +142,7 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
         .core_req_tag   (mem_req_tag),
         .core_req_ready (mem_req_ready),
         `UNUSED_PIN (core_req_empty),
-        `UNUSED_PIN (core_write_notify),
+        `UNUSED_PIN (core_req_wr_notify),
 
         // Output response
         .core_rsp_valid (mem_rsp_valid),
