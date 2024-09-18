@@ -188,17 +188,18 @@ $(BIN_DIR)/emconfig.json:
 	mkdir -p $(BIN_DIR); cd $(BUILD_DIR); emconfigutil --platform $(PLATFORM) --od ../$(BIN_DIR)
 
 report: $(XCLBIN_CONTAINER)
-ifeq ($(TARGET),$(findstring $(TARGET), hw))
-	cp $(BUILD_DIR)/_x/logs/link/syn/ulp_vortex_afu_1_0_synth_1_runme.log $(BUILD_DIR)/bin/runme.log
+ifeq ($(TARGET), hw)
+	cp $(BUILD_DIR)/_x/logs/link/vivado.log $(BUILD_DIR)/bin/vivado.log
 	cp $(BUILD_DIR)/_x/reports/link/imp/impl_1_full_util_routed.rpt $(BUILD_DIR)/bin/synthesis.log
 	cp $(BUILD_DIR)/_x/reports/link/imp/impl_1_hw_bb_locked_timing_summary_routed.rpt $(BUILD_DIR)/bin/timing.log
+	[ -f "$(BUILD_DIR)/_x/link/vivado/vpl/prj/prj.runs/impl_1/debug_nets.ltx" ] && cp $(BUILD_DIR)/_x/link/vivado/vpl/prj/prj.runs/impl_1/debug_nets.ltx $(BUILD_DIR)/bin/debug_nets.ltx
 endif
 
 hwserver:
 	debug_hw --xvc_pcie /dev/xfpga/xvc_pub.u2305.0 --hw_server &
 
 chipscope:
-	debug_hw --vivado --host localhost --ltx_file $(BUILD_DIR)/_x/link/vivado/vpl/prj/prj.runs/impl_1/debug_nets.ltx &
+	debug_hw --vivado --host localhost --ltx_file $(BUILD_DIR)/bin/debug_nets.ltx &
 
 clean:
 	$(RMDIR) $(BUILD_DIR)
