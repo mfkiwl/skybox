@@ -319,44 +319,50 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
 
 `ifdef DBG_SCOPE_RASTER
 `ifdef SCOPE
-    if (INSTANCE_ID == "cluster0-raster0") begin
-        wire cache_req_fire = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
-        wire cache_rsp_fire = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
-        wire raster_req_fire = raster_bus_if.req_valid && raster_bus_if.req_ready;
-        VX_scope_tap #(
-            .SCOPE_ID (4),
-            .TRIGGERW (9),
-            .PROBEW   (76)
-        ) scope_tap (
-            .clk(clk),
-            .reset(scope_reset),
-            .start(1'b0),
-            .stop(1'b0),
-            .triggers({
-                reset,
-                cache_req_fire,
-                cache_rsp_fire,
-                raster_req_fire,
-                mem_unit_busy,
-                mem_unit_ready,
-                mem_unit_start,
-                mem_unit_valid,
-                raster_bus_if.req_data.done
-            }),
-            .probes({
-                cache_bus_if[0].rsp_data.data,
-                cache_bus_if[0].rsp_data.tag,
-                cache_bus_if[0].req_data.tag,
-                cache_bus_if[0].req_data.addr,
-                cache_bus_if[0].req_data.rw,
-                no_pending_tiledata
-            }),
-            .bus_in(scope_bus_in),
-            .bus_out(scope_bus_out)
-        );
-    end
+    wire cache_req_fire = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
+    wire cache_rsp_fire = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
+    wire raster_req_fire = raster_bus_if.req_valid && raster_bus_if.req_ready;
+    VX_scope_tap #(
+        .SCOPE_ID (7),
+        .TRIGGERW (10),
+        .PROBEW   (551),
+        .DEPTH    (4096)
+    ) scope_tap (
+        .clk(clk),
+        .reset(scope_reset),
+        .start(1'b0),
+        .stop(1'b0),
+        .triggers({
+            cache_req_fire,
+            cache_rsp_fire,
+            raster_req_fire,
+            dcr_bus_if.write_valid,
+            mem_unit_busy,
+            mem_unit_ready,
+            mem_unit_start,
+            mem_unit_valid,
+            no_pending_tiledata,
+            raster_bus_if.req_data.done
+        }),
+        .probes({
+            cache_bus_if[0].rsp_data.data,
+            cache_bus_if[0].rsp_data.tag,
+            cache_bus_if[0].req_data.tag,
+            cache_bus_if[0].req_data.addr,
+            cache_bus_if[0].req_data.rw,
+            dcr_bus_if.write_addr,
+            dcr_bus_if.write_data,
+            raster_bus_if.req_data.stamps[0].pos_x,
+            raster_bus_if.req_data.stamps[0].pos_y,
+            raster_bus_if.req_data.stamps[0].mask,
+            raster_bus_if.req_data.stamps[0].bcoords,
+            raster_bus_if.req_data.stamps[0].pid
+        }),
+        .bus_in(scope_bus_in),
+        .bus_out(scope_bus_out)
+    );
 `else
-    `SCOPE_IO_UNUSED_W(0)
+    `SCOPE_IO_UNUSED()
 `endif
 `ifdef CHIPSCOPE
     ila_raster ila_raster_inst (

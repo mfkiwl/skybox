@@ -16,6 +16,8 @@
 module VX_graphics import VX_gpu_pkg::*; #(
     parameter CLUSTER_ID = 0
 ) (
+    `SCOPE_IO_DECL
+
     input wire              clk,
     input wire              reset,
 
@@ -54,6 +56,14 @@ module VX_graphics import VX_gpu_pkg::*; #(
     `UNUSED_VAR (clk)
     `UNUSED_VAR (reset)
 
+`ifdef SCOPE
+    localparam scope_raster = 0;
+    localparam scope_tex = scope_raster + `NUM_RASTER_UNITS;
+    localparam scope_om = scope_tex + `NUM_TEX_UNITS;
+    localparam scope_count = scope_om + `NUM_OM_UNITS;
+    `SCOPE_IO_SWITCH (scope_count);
+`endif
+
 `ifdef EXT_RASTER_ENABLE
 
 `ifdef PERF_ENABLE
@@ -89,7 +99,7 @@ module VX_graphics import VX_gpu_pkg::*; #(
             .QUAD_FIFO_DEPTH (`RASTER_QUAD_FIFO_DEPTH),
             .OUTPUT_QUADS    (`NUM_SFU_LANES)
         ) raster_unit (
-            `SCOPE_IO_BIND (i)
+            `SCOPE_IO_BIND (scope_raster + i)
             .clk           (clk),
             .reset         (raster_reset),
         `ifdef PERF_ENABLE
@@ -200,6 +210,7 @@ module VX_graphics import VX_gpu_pkg::*; #(
             .NUM_LANES   (`NUM_SFU_LANES),
             .TAG_WIDTH   (`TEX_REQ_ARB2_TAG_WIDTH)
         ) tex_unit (
+            `SCOPE_IO_BIND (scope_tex + i)
             .clk          (clk),
             .reset        (tex_reset),
         `ifdef PERF_ENABLE
@@ -294,6 +305,7 @@ module VX_graphics import VX_gpu_pkg::*; #(
             .INSTANCE_ID ($sformatf("cluster%0d-om%0d", CLUSTER_ID, i)),
             .NUM_LANES   (`NUM_SFU_LANES)
         ) om_unit (
+            `SCOPE_IO_BIND (scope_om + i)
             .clk           (clk),
             .reset         (om_reset),
         `ifdef PERF_ENABLE

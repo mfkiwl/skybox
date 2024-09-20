@@ -19,6 +19,8 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     parameter `STRING INSTANCE_ID = "",
     parameter NUM_LANES = 4
 ) (
+    `SCOPE_IO_DECL
+
     input wire clk,
     input wire reset,
 
@@ -342,6 +344,47 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     assign write_req_canceled = mem_req_valid_unqual_r && mem_req_rw_r && is_degenerate_req && mem_req_ready_r;
 
 `ifdef DBG_SCOPE_OM
+`ifdef SCOPE
+    wire cache_req_fire = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
+    wire cache_rsp_fire = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
+    wire om_bus_fire = om_bus_if.req_valid && om_bus_if.req_ready;
+    VX_scope_tap #(
+        .SCOPE_ID (6),
+        .TRIGGERW (4),
+        .PROBEW   (471),
+        .DEPTH    (4096)
+    ) scope_tap (
+        .clk(clk),
+        .reset(scope_reset),
+        .start(1'b0),
+        .stop(1'b0),
+        .triggers({
+            cache_req_fire,
+            cache_rsp_fire,
+            dcr_bus_if.write_valid,
+            om_bus_fire
+        }),
+        .probes({
+            cache_bus_if[0].rsp_data.data,
+            cache_bus_if[0].rsp_data.tag,
+            cache_bus_if[0].req_data.tag,
+            cache_bus_if[0].req_data.addr,
+            cache_bus_if[0].req_data.rw,
+            dcr_bus_if.write_addr,
+            dcr_bus_if.write_data,
+            om_bus_if.req_data.mask,
+            om_bus_if.req_data.pos_x,
+            om_bus_if.req_data.pos_y,
+            om_bus_if.req_data.color,
+            om_bus_if.req_data.depth,
+            om_bus_if.req_data.face
+        }),
+        .bus_in(scope_bus_in),
+        .bus_out(scope_bus_out)
+    );
+`else
+    `SCOPE_IO_UNUSED()
+`endif
 `ifdef CHIPSCOPE
     ila_om ila_om_inst (
         .clk    (clk),

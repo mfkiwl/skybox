@@ -57,7 +57,7 @@ module VX_cluster import VX_gpu_pkg::*; #(
 
 `ifdef SCOPE
     localparam scope_socket = 0;
-    `SCOPE_IO_SWITCH (`NUM_SOCKETS);
+    `SCOPE_IO_SWITCH (1 + `NUM_SOCKETS);
 `endif
 
 `ifdef PERF_ENABLE
@@ -152,6 +152,8 @@ module VX_cluster import VX_gpu_pkg::*; #(
     VX_graphics #(
         .CLUSTER_ID (CLUSTER_ID)
     ) graphics (
+        `SCOPE_IO_BIND  (scope_socket + 0)
+
         .clk   (clk),
         .reset (graphics_reset),
 
@@ -236,7 +238,7 @@ module VX_cluster import VX_gpu_pkg::*; #(
             .SOCKET_ID ((CLUSTER_ID * `NUM_SOCKETS) + socket_id),
             .INSTANCE_ID ($sformatf("%s-socket%0d", INSTANCE_ID, socket_id))
         ) socket (
-            `SCOPE_IO_BIND  (scope_socket+socket_id)
+            `SCOPE_IO_BIND  (scope_socket + 1 + socket_id)
 
             .clk            (clk),
             .reset          (socket_reset),
