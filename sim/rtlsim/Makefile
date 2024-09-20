@@ -44,13 +44,6 @@ SRCS = $(COMMON_DIR)/util.cpp $(COMMON_DIR)/mem.cpp $(COMMON_DIR)/rvfloats.cpp $
 SRCS += $(DPI_DIR)/util_dpi.cpp $(DPI_DIR)/float_dpi.cpp
 SRCS += $(SRC_DIR)/processor.cpp
 
-ifdef AXI_BUS
-	TOP = Vortex_axi
-	CXXFLAGS += -DAXI_BUS
-else
-	TOP = Vortex
-endif
-
 VL_FLAGS = --exe
 VL_FLAGS += --language 1800-2009 --assert -Wall -Wpedantic
 VL_FLAGS += -Wno-DECLFILENAME -Wno-REDEFMACRO
@@ -61,7 +54,7 @@ VL_FLAGS += -DXLEN_$(XLEN)
 VL_FLAGS += $(CONFIGS)
 VL_FLAGS += $(RTL_INCLUDE)
 VL_FLAGS += $(RTL_PKGS)
-VL_FLAGS += --cc $(TOP) --top-module $(TOP)
+VL_FLAGS += --cc Vortex --top-module Vortex
 
 CXXFLAGS += $(CONFIGS)
 
