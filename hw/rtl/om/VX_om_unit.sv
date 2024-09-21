@@ -343,8 +343,8 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
 
     assign write_req_canceled = mem_req_valid_unqual_r && mem_req_rw_r && is_degenerate_req && mem_req_ready_r;
 
-`ifdef DBG_SCOPE_OM
 `ifdef SCOPE
+`ifdef DBG_SCOPE_OM
     wire cache_req_fire = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
     wire cache_rsp_fire = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
     wire om_bus_fire = om_bus_if.req_valid && om_bus_if.req_ready;
@@ -385,6 +385,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
 `else
     `SCOPE_IO_UNUSED()
 `endif
+`endif
 `ifdef CHIPSCOPE
     ila_om ila_om_inst (
         .clk    (clk),
@@ -392,7 +393,6 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
         .probe1 ({dcr_bus_if.write_valid, dcr_bus_if.write_addr, dcr_bus_if.write_data}),
         .probe2 ({om_bus_if.req_valid, om_bus_if.req_data, om_bus_if.req_ready})
     );
-`endif
 `endif
 
 `ifdef PERF_ENABLE
