@@ -1,6 +1,6 @@
 PROJECT = VX_om_unit_top
 TOP_LEVEL_ENTITY = $(PROJECT)
-SRC_FILE = VX_om_unit.sv
+SRC_FILE = $(PROJECT).sv
 
 include ../../common.mk
 

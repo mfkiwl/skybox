@@ -63,6 +63,7 @@ CONFIGS += $(CONFIGS_$(NUM_CORES)c)
 # include sources
 RTL_PKGS = $(AFU_DIR)/local_mem_cfg_pkg.sv $(AFU_DIR)/ccip/ccip_if_pkg.sv
 RTL_PKGS += $(RTL_DIR)/VX_gpu_pkg.sv $(RTL_DIR)/fpu/VX_fpu_pkg.sv
+RTL_PKGS += $(RTL_DIR)/tex/VX_tex_pkg.sv $(RTL_DIR)/raster/VX_raster_pkg.sv $(RTL_DIR)/om/VX_om_pkg.sv
 FPU_INCLUDE = -I$(RTL_DIR)/fpu
 ifneq (,$(findstring FPU_FPNEW,$(CONFIGS)))
 	RTL_PKGS += $(THIRD_PARTY_DIR)/cvfpu/src/fpnew_pkg.sv $(THIRD_PARTY_DIR)/cvfpu/src/common_cells/src/cf_math_pkg $(THIRD_PARTY_DIR)/cvfpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
