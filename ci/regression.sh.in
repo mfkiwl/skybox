@@ -387,6 +387,10 @@ config2()
     CONFIGS="-DPLATFORM_MEMORY_ADDR_WIDTH=33" ./ci/blackbox.sh --driver=opae --app=mstress
     CONFIGS="-DPLATFORM_MEMORY_ADDR_WIDTH=33" ./ci/blackbox.sh --driver=xrt --app=mstress
 
+    # test DRAM banks interleaving
+    CONFIGS="-DPLATFORM_MEMORY_INTERLEAVE=1" ./ci/blackbox.sh --driver=opae --app=mstress
+    CONFIGS="-DPLATFORM_MEMORY_INTERLEAVE=0" ./ci/blackbox.sh --driver=opae --app=mstress
+
     echo "configuration-2 tests done!"
 }
 
@@ -411,11 +415,13 @@ debug()
 
     test_csv_trace
 
-    CONFIGS="-O0 -DEXT_GFX_ENABLE -DSOCKET_SIZE=1" ./ci/blackbox.sh --driver=opae --cores=2 --clusters=2 --l2cache --debug=1 --perf=1 --app=tex --args="-itoad.png -rtoad_ref_f0.png -f0 -g0"
-    CONFIGS="-O0 -DEXT_GFX_ENABLE -DSOCKET_SIZE=1" ./ci/blackbox.sh --driver=xrt --cores=2 --clusters=2 --l2cache --debug=1 --perf=1 --app=tex --args="-itoad.png -rtoad_ref_f0.png -f0 -g0"
-    CONFIGS="-DEXT_GFX_ENABLE -DSOCKET_SIZE=1" ./ci/blackbox.sh --driver=simx --cores=2 --clusters=2 --l2cache --debug=1 --perf=1 --app=tex --args="-itoad.png -rtoad_ref_f0.png -f0 -g0"
-    CONFIGS="-DEXT_GFX_ENABLE" ./ci/blackbox.sh --driver=opae --scope --app=tex --args="-itoad.png -rtoad_ref_f0.png -f0 -g0"
-    CONFIGS="-DEXT_GFX_ENABLE" ./ci/blackbox.sh --driver=xrt --scope --app=tex --args="-itoad.png -rtoad_ref_f0.png -f0 -g0"
+    CONFIGS="-O0 -DEXT_GFX_ENABLE" ./ci/blackbox.sh --driver=opae --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
+    CONFIGS="-O0 -DEXT_GFX_ENABLE" ./ci/blackbox.sh --driver=xrt --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
+    CONFIGS="-DEXT_GFX_ENABLE -DSOCKET_SIZE=1" ./ci/blackbox.sh --driver=opae --cores=2 --clusters=2 --l2cache --debug=1 --perf=1 --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
+    CONFIGS="-DEXT_GFX_ENABLE -DSOCKET_SIZE=1" ./ci/blackbox.sh --driver=xrt --cores=2 --clusters=2 --l2cache --debug=1 --perf=1 --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
+    CONFIGS="-DEXT_GFX_ENABLE -DSOCKET_SIZE=1" ./ci/blackbox.sh --driver=simx --cores=2 --clusters=2 --l2cache --debug=1 --perf=1 --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
+    CONFIGS="-DEXT_GFX_ENABLE" ./ci/blackbox.sh --driver=opae --scope --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
+    CONFIGS="-DEXT_GFX_ENABLE" ./ci/blackbox.sh --driver=xrt --scope --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
 
     echo "debugging tests done!"
 }
