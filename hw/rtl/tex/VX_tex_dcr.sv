@@ -63,9 +63,7 @@ module VX_tex_dcr import VX_tex_pkg::*; #(
                 end
                 default: begin
                     for (integer j = 0; j <= `VX_TEX_LOD_MAX; ++j) begin
-                    `IGNORE_WARNINGS_BEGIN
-                        if (dcr_bus_if.write_addr == `VX_DCR_TEX_MIPOFF(j)) begin
-                    `IGNORE_WARNINGS_END
+                        if (dcr_bus_if.write_addr == `VX_DCR_TEX_MIPOFF(`VX_DCR_ADDR_WIDTH'(j))) begin
                             dcrs_n.mipoff[j] = dcr_bus_if.write_data[`TEX_MIPOFF_BITS-1:0];
                         end
                     end
