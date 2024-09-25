@@ -221,23 +221,18 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     wire cache_req_fire = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
     wire cache_rsp_fire = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
     wire tex_bus_fire = tex_bus_if.req_valid && tex_bus_if.req_ready;
-    VX_scope_tap #(
-        .SCOPE_ID (5),
-        .TRIGGERW (4),
-        .PROBEW   (398),
-        .DEPTH    (4096)
-    ) scope_tap (
-        .clk(clk),
-        .reset(scope_reset),
-        .start(1'b0),
-        .stop(1'b0),
-        .triggers({
+    `SCOPE_IO_SWITCH (1);
+    `NEG_EDGE (reset_negedge, reset);
+    `SCOPE_TAP_EX (0, 5, 4, (
+            (TCACHE_WORD_SIZE * 8) + TCACHE_TAG_WIDTH + TCACHE_TAG_WIDTH + TCACHE_ADDR_WIDTH + 1 +
+            `VX_DCR_ADDR_WIDTH + `VX_DCR_DATA_WIDTH +
+            NUM_LANES * (1 + 2 * 32 + `VX_TEX_LOD_BITS) + `VX_TEX_STAGE_BITS + TAG_WIDTH
+        ), {
             cache_req_fire,
             cache_rsp_fire,
             dcr_bus_if.write_valid,
             tex_bus_fire
-        }),
-        .probes({
+        }, {
             cache_bus_if[0].rsp_data.data,
             cache_bus_if[0].rsp_data.tag,
             cache_bus_if[0].req_data.tag,
@@ -250,9 +245,8 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
             tex_bus_if.req_data.lod,
             tex_bus_if.req_data.stage,
             tex_bus_if.req_data.tag
-        }),
-        .bus_in(scope_bus_in),
-        .bus_out(scope_bus_out)
+        },
+        reset_negedge, 1'b0, 4096
     );
 `else
     `SCOPE_IO_UNUSED()

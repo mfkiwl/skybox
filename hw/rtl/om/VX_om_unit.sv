@@ -348,23 +348,18 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     wire cache_req_fire = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
     wire cache_rsp_fire = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
     wire om_bus_fire = om_bus_if.req_valid && om_bus_if.req_ready;
-    VX_scope_tap #(
-        .SCOPE_ID (6),
-        .TRIGGERW (4),
-        .PROBEW   (471),
-        .DEPTH    (4096)
-    ) scope_tap (
-        .clk(clk),
-        .reset(scope_reset),
-        .start(1'b0),
-        .stop(1'b0),
-        .triggers({
+    `SCOPE_IO_SWITCH (1);
+    `NEG_EDGE (reset_negedge, reset);
+    `SCOPE_TAP_EX (0, 6, 4, (
+            (OCACHE_WORD_SIZE * 8) + OCACHE_TAG_WIDTH + OCACHE_TAG_WIDTH + OCACHE_ADDR_WIDTH + 1 +
+            `VX_DCR_ADDR_WIDTH + `VX_DCR_DATA_WIDTH +
+            NUM_LANES * (1 + `VX_OM_DIM_BITS + `VX_OM_DIM_BITS + $bits(om_color_t) + `VX_OM_DEPTH_BITS + 1)
+        ), {
             cache_req_fire,
             cache_rsp_fire,
             dcr_bus_if.write_valid,
             om_bus_fire
-        }),
-        .probes({
+        }, {
             cache_bus_if[0].rsp_data.data,
             cache_bus_if[0].rsp_data.tag,
             cache_bus_if[0].req_data.tag,
@@ -378,9 +373,8 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
             om_bus_if.req_data.color,
             om_bus_if.req_data.depth,
             om_bus_if.req_data.face
-        }),
-        .bus_in(scope_bus_in),
-        .bus_out(scope_bus_out)
+        },
+        reset_negedge, 1'b0, 4096
     );
 `else
     `SCOPE_IO_UNUSED()
