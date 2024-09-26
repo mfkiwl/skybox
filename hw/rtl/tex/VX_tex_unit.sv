@@ -226,7 +226,7 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
             NUM_LANES * (1 + 2 * 32 + `VX_TEX_LOD_BITS) + `VX_TEX_STAGE_BITS + TAG_WIDTH +
             `TEX_ADDR_BITS + `TEX_MIPOFF_BITS + 2 * `VX_TEX_LOD_BITS
         ), {
-           cache_bus_if[0].req_valid,
+            cache_bus_if[0].req_valid,
             cache_bus_if[0].req_ready,
             cache_bus_if[0].rsp_valid,
             cache_bus_if[0].rsp_ready,
@@ -236,11 +236,11 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
             tex_bus_if.rsp_valid,
             tex_bus_if.rsp_ready
         }, {
-            cache_bus_if[0].rsp_data.data,
-            cache_bus_if[0].rsp_data.tag,
             cache_bus_if[0].req_data.tag,
             cache_bus_if[0].req_data.addr,
             cache_bus_if[0].req_data.rw,
+            cache_bus_if[0].rsp_data.data,
+            cache_bus_if[0].rsp_data.tag,
             dcr_bus_if.write_addr,
             dcr_bus_if.write_data,
             tex_bus_if.req_data.mask,

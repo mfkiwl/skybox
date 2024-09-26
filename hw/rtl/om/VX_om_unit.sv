@@ -361,11 +361,11 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
             om_bus_if.req_valid,
             om_bus_if.req_ready
         }, {
-            cache_bus_if[0].rsp_data.data,
-            cache_bus_if[0].rsp_data.tag,
             cache_bus_if[0].req_data.tag,
             cache_bus_if[0].req_data.addr,
             cache_bus_if[0].req_data.rw,
+            cache_bus_if[0].rsp_data.data,
+            cache_bus_if[0].rsp_data.tag,
             dcr_bus_if.write_addr,
             dcr_bus_if.write_data,
             om_bus_if.req_data.mask,

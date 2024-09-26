@@ -341,11 +341,11 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
             no_pending_tiledata,
             raster_bus_if.req_data.done
         }, {
-            cache_bus_if[0].rsp_data.data,
-            cache_bus_if[0].rsp_data.tag,
             cache_bus_if[0].req_data.tag,
             cache_bus_if[0].req_data.addr,
             cache_bus_if[0].req_data.rw,
+            cache_bus_if[0].rsp_data.data,
+            cache_bus_if[0].rsp_data.tag,
             dcr_bus_if.write_addr,
             dcr_bus_if.write_data,
             raster_bus_if.req_data.stamps[0].pos_x,
