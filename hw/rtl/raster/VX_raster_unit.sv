@@ -319,19 +319,20 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
 
 `ifdef SCOPE
 `ifdef DBG_SCOPE_RASTER
-    wire cache_req_fire = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
-    wire cache_rsp_fire = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
-    wire raster_req_fire = raster_bus_if.req_valid && raster_bus_if.req_ready;
     `SCOPE_IO_SWITCH (1);
     `NEG_EDGE (reset_negedge, reset);
-    `SCOPE_TAP_EX (0, 7, 10, (
+    `SCOPE_TAP_EX (0, 7, 13, (
             (RCACHE_WORD_SIZE * 8) + RCACHE_TAG_WIDTH + RCACHE_TAG_WIDTH + RCACHE_ADDR_WIDTH + 1 +
             `VX_DCR_ADDR_WIDTH + `VX_DCR_DATA_WIDTH +
-            $bits(raster_stamp_t)
+            $bits(raster_stamp_t) +
+            $bits(raster_dcrs_t)
         ), {
-            cache_req_fire,
-            cache_rsp_fire,
-            raster_req_fire,
+            cache_bus_if[0].req_valid,
+            cache_bus_if[0].req_ready,
+            cache_bus_if[0].rsp_valid,
+            cache_bus_if[0].rsp_ready,
+            raster_bus_if.req_valid,
+            raster_bus_if.req_ready,
             dcr_bus_if.write_valid,
             mem_unit_busy,
             mem_unit_ready,
@@ -351,7 +352,15 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
             raster_bus_if.req_data.stamps[0].pos_y,
             raster_bus_if.req_data.stamps[0].mask,
             raster_bus_if.req_data.stamps[0].bcoords,
-            raster_bus_if.req_data.stamps[0].pid
+            raster_bus_if.req_data.stamps[0].pid,
+            raster_dcrs.tbuf_addr,
+            raster_dcrs.tile_count,
+            raster_dcrs.pbuf_addr,
+            raster_dcrs.pbuf_stride,
+            raster_dcrs.dst_xmin,
+            raster_dcrs.dst_xmax,
+            raster_dcrs.dst_ymin,
+            raster_dcrs.dst_ymax
         },
         reset_negedge, 1'b0, 4096
     );
