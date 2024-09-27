@@ -346,8 +346,11 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
 `ifdef SCOPE
 `ifdef DBG_SCOPE_OM
     `SCOPE_IO_SWITCH (1);
+    wire cache_bus_req_fire_0 = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
+    wire cache_bus_rsp_fire_0 = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
+    wire om_bus_fire = om_bus_if.req_valid && om_bus_if.req_ready;
     `NEG_EDGE (reset_negedge, reset);
-    `SCOPE_TAP_EX (0, 6, 7, (
+    `SCOPE_TAP_EX (0, 6, 6, 4, (
             (OCACHE_WORD_SIZE * 8) + OCACHE_TAG_WIDTH + OCACHE_TAG_WIDTH + OCACHE_ADDR_WIDTH + 1 +
             `VX_DCR_ADDR_WIDTH + `VX_DCR_DATA_WIDTH +
             NUM_LANES * (1 + `VX_OM_DIM_BITS + `VX_OM_DIM_BITS + $bits(om_color_t) + `VX_OM_DEPTH_BITS + 1) +
@@ -357,9 +360,13 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
             cache_bus_if[0].req_ready,
             cache_bus_if[0].rsp_valid,
             cache_bus_if[0].rsp_ready,
-            dcr_bus_if.write_valid,
             om_bus_if.req_valid,
             om_bus_if.req_ready
+        }, {
+            cache_bus_req_fire_0,
+            cache_bus_rsp_fire_0,
+            dcr_bus_if.write_valid,
+            om_bus_fire
         }, {
             cache_bus_if[0].req_data.tag,
             cache_bus_if[0].req_data.addr,

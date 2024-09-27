@@ -320,8 +320,11 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
 `ifdef SCOPE
 `ifdef DBG_SCOPE_RASTER
     `SCOPE_IO_SWITCH (1);
+    wire cache_bus_req_fire_0 = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
+    wire cache_bus_rsp_fire_0 = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
+    wire raster_bus_fire = raster_bus_if.req_valid && raster_bus_if.req_ready;
     `NEG_EDGE (reset_negedge, reset);
-    `SCOPE_TAP_EX (0, 7, 13, (
+    `SCOPE_TAP_EX (0, 7, 12, 5, (
             (RCACHE_WORD_SIZE * 8) + RCACHE_TAG_WIDTH + RCACHE_TAG_WIDTH + RCACHE_ADDR_WIDTH + 1 +
             `VX_DCR_ADDR_WIDTH + `VX_DCR_DATA_WIDTH +
             $bits(raster_stamp_t) +
@@ -333,13 +336,18 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
             cache_bus_if[0].rsp_ready,
             raster_bus_if.req_valid,
             raster_bus_if.req_ready,
-            dcr_bus_if.write_valid,
             mem_unit_busy,
             mem_unit_ready,
             mem_unit_start,
             mem_unit_valid,
             no_pending_tiledata,
             raster_bus_if.req_data.done
+        }, {
+            cache_bus_req_fire_0,
+            cache_bus_rsp_fire_0,
+            dcr_bus_if.write_valid,
+            raster_bus_fire,
+            mem_unit_fire
         }, {
             cache_bus_if[0].req_data.tag,
             cache_bus_if[0].req_data.addr,
