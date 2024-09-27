@@ -196,7 +196,7 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
 
     assign {rsp_info_s, rsp_filter, rsp_lgstride, mem_rsp_align, mem_rsp_dups} = mem_rsp_tag;
 
-    reg [NUM_LANES-1:0][3:0][31:0] mem_rsp_data_qual;
+    wire [NUM_LANES-1:0][3:0][31:0] mem_rsp_data_qual;
 
     for (genvar i = 0; i < NUM_LANES; ++i) begin : g_mem_rsp_data_qual
         for (genvar j = 0; j < 4; ++j) begin : g_j
@@ -212,14 +212,17 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
                 rsp_data_shifted[7:0]   = mem_rsp_align[j][i][0] ? rsp_data_shifted[15:8] : rsp_data_shifted[7:0];
             end
 
+            reg [31:0] rsp_data_stride;
             always @(*) begin
                 case (rsp_lgstride)
-                0:       mem_rsp_data_qual[i][j] = 32'(rsp_data_shifted[7:0]);
-                1:       mem_rsp_data_qual[i][j] = 32'(rsp_data_shifted[15:0]);
-                2:       mem_rsp_data_qual[i][j] = rsp_data_shifted;
-                default: mem_rsp_data_qual[i][j] = 'x;
+                0:       rsp_data_stride = 32'(rsp_data_shifted[7:0]);
+                1:       rsp_data_stride = 32'(rsp_data_shifted[15:0]);
+                2:       rsp_data_stride = rsp_data_shifted;
+                default: rsp_data_stride = 'x;
                 endcase
             end
+
+            assign mem_rsp_data_qual[i][j] = rsp_data_stride;
         end
     end
 

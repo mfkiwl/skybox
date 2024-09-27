@@ -55,7 +55,7 @@ module VX_raster_te #(
     wire stall;
 
     reg [2:0][`RASTER_DATA_BITS-1:0] tile_extents;
-    reg [2:0][2:0][`RASTER_DATA_BITS-1:0] tile_edges;
+    reg [(3 * 3 * `RASTER_DATA_BITS)-1:0] tile_edges;
     reg [`VX_RASTER_PID_BITS-1:0]       tile_pid;
     reg [`VX_RASTER_DIM_BITS-1:0]       tile_xloc;
     reg [`VX_RASTER_DIM_BITS-1:0]       tile_yloc;
@@ -130,6 +130,7 @@ module VX_raster_te #(
     // Generate sub-tile info
 
     wire [`VX_RASTER_DIM_BITS-1:0] tile_logsize = `VX_RASTER_DIM_BITS'(TILE_LOGSIZE-1) - `VX_RASTER_DIM_BITS'(tile_level);
+    wire [2:0][2:0][`RASTER_DATA_BITS-1:0] tile_edges_w = tile_edges;
     wire is_block = (tile_logsize < `VX_RASTER_DIM_BITS'(BLOCK_LOGSIZE));
     assign subtile_level = tile_level + LEVEL_BITS'(1);
     for (genvar i = 0; i < 2; ++i) begin : g_subtile_edge_eval
@@ -137,7 +138,7 @@ module VX_raster_te #(
             assign subtile_xloc[2 * i + j] = tile_xloc + (`VX_RASTER_DIM_BITS'(i) << tile_logsize);
             assign subtile_yloc[2 * i + j] = tile_yloc + (`VX_RASTER_DIM_BITS'(j) << tile_logsize);
             for (genvar k = 0; k < 3; ++k) begin : g_k
-                assign subtile_edge_eval[2 * i + j][k] = i * (tile_edges[k][0] << tile_logsize) + j * (tile_edges[k][1] << tile_logsize) + tile_edge_eval[k];
+                assign subtile_edge_eval[2 * i + j][k] = i * (tile_edges_w[k][0] << tile_logsize) + j * (tile_edges_w[k][1] << tile_logsize) + tile_edge_eval[k];
             end
         end
     end
@@ -217,7 +218,7 @@ module VX_raster_te #(
     assign xloc_out  = tile_xloc_r;
     assign yloc_out  = tile_yloc_r;
     assign pid_out   = tile_pid;
-    `EDGE_UPDATE (edges_out, tile_edges, tile_edge_eval_r);
+    `EDGE_UPDATE (edges_out, tile_edges_w, tile_edge_eval_r);
 
     `UNUSED_VAR (tile_level_r)
 
