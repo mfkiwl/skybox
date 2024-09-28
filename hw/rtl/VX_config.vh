@@ -227,7 +227,9 @@
 `endif
 
 `ifndef SV_DPI
+`ifndef DPI_DISABLE
 `define DPI_DISABLE
+`endif
 `endif
 
 `ifndef FPU_FPNEW
