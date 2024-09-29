@@ -218,7 +218,7 @@ module VX_cluster import VX_gpu_pkg::*; #(
         .cache_perf     (mem_perf_tmp_if.l2cache),
     `endif
         .core_bus_if    (l2_mem_bus_if),
-        .mem_bus_if     (mem_bus_if)
+        .mem_bus_if     (mem_bus2_if)
     );
 
     ///////////////////////////////////////////////////////////////////////////
