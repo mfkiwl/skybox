@@ -317,16 +317,17 @@ package VX_gpu_pkg;
 
     /////////////////////////////// L2 Parameters /////////////////////////////
 
-    localparam L1_MEM_L2_IDX        = 0;
-    localparam TCACHE_MEM_L2_IDX    = L1_MEM_L2_IDX + `NUM_SOCKETS;
+    localparam L1_MEM_L2_START      = 0;
+    localparam TCACHE_MEM_L2_IDX    = L1_MEM_L2_START   + `NUM_SOCKETS;
     localparam RCACHE_MEM_L2_IDX    = TCACHE_MEM_L2_IDX + `EXT_TEX_ENABLED;
     localparam OCACHE_MEM_L2_IDX    = RCACHE_MEM_L2_IDX + `EXT_RASTER_ENABLED;
+    localparam L1_MEM_L2_END        = OCACHE_MEM_L2_IDX + `EXT_OM_ENABLED;
 
     // Word size in bytes
     localparam L2_WORD_SIZE	        = `L1_LINE_SIZE;
 
     // Input request size
-    localparam L2_NUM_REQS	        = (`NUM_SOCKETS + `EXT_TEX_ENABLED + `EXT_RASTER_ENABLED + `EXT_OM_ENABLED);
+    localparam L2_NUM_REQS	        = L1_MEM_L2_END;
 
     // Core request tag bits
     localparam L2_TAG_WIDTH	        = `MAX(`MAX(`MAX(L1_MEM_ARB_TAG_WIDTH,
