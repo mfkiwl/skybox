@@ -420,10 +420,18 @@ debug()
     CONFIGS="-DEXT_GFX_ENABLE -DSOCKET_SIZE=1" ./ci/blackbox.sh --driver=opae --cores=2 --clusters=2 --l2cache --debug=1 --perf=1 --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
     CONFIGS="-DEXT_GFX_ENABLE -DSOCKET_SIZE=1" ./ci/blackbox.sh --driver=xrt --cores=2 --clusters=2 --l2cache --debug=1 --perf=1 --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
     CONFIGS="-DEXT_GFX_ENABLE -DSOCKET_SIZE=1" ./ci/blackbox.sh --driver=simx --cores=2 --clusters=2 --l2cache --debug=1 --perf=1 --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
+
+    echo "debugging tests done!"
+}
+
+scope()
+{
+    echo "begin scope tests..."
+
     CONFIGS="-DEXT_GFX_ENABLE" ./ci/blackbox.sh --driver=opae --scope --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
     CONFIGS="-DEXT_GFX_ENABLE" ./ci/blackbox.sh --driver=xrt --scope --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
 
-    echo "debugging tests done!"
+    echo "debugging scope done!"
 }
 
 stress()
@@ -452,7 +460,7 @@ synthesis()
 show_usage()
 {
     echo "Vortex Regression Test"
-    echo "Usage: $0 [--clean] [--unittest] [--isa] [--kernel] [--regression] [--opencl] [--tex] [--om] [--raster] [--graphics] [--cache] [--config1] [--config2] [--debug] [--stress] [--synthesis] [--all] [--h|--help]"
+    echo "Usage: $0 [--clean] [--unittest] [--isa] [--kernel] [--regression] [--opencl] [--tex] [--om] [--raster] [--graphics] [--cache] [--config1] [--config2] [--debug] [--scope] [--stress] [--synthesis] [--all] [--h|--help]"
 }
 
 declare -a tests=()
@@ -490,22 +498,25 @@ while [ "$1" != "" ]; do
         --debug )
                 tests+=("debug")
                 ;;
+        --scope )
+                tests+=("scope")
+                ;;
         --stress )
                 tests+=("stress")
                 ;;
         --synthesis )
                 tests+=("synthesis")
-		;;
-	--graphics )
+		        ;;
+        --graphics )
                 tests+=("graphics")
-		;;
-	--tex )
+                ;;
+        --tex )
                 tests+=("tex")
-	        ;;
-	--om )
+                ;;
+        --om )
                 tests+=("om")
-		;;
-	--raster )
+                ;;
+        --raster )
                 tests+=("raster")
                 ;;
         --all )
@@ -523,12 +534,13 @@ while [ "$1" != "" ]; do
                 tests+=("config1")
                 tests+=("config2")
                 tests+=("debug")
+                tests+=("scope")
                 tests+=("stress")
                 tests+=("synthesis")
-		tests+=("graphics")
-		tests+=("tex")
-		tests+=("om")
-		tests+=("raster")
+                tests+=("graphics")
+                tests+=("tex")
+                tests+=("om")
+                tests+=("raster")
                 ;;
         -h | --help )
                 show_usage
