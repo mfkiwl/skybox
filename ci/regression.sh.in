@@ -433,8 +433,8 @@ scope()
 {
     echo "begin scope tests..."
 
-    CONFIGS="-DEXT_GFX_ENABLE" SCOPE_DEPTH=1024 ./ci/blackbox.sh --driver=opae --scope --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
-    CONFIGS="-DEXT_GFX_ENABLE" SCOPE_DEPTH=1024 ./ci/blackbox.sh --driver=xrt --scope --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
+    CONFIGS="-DEXT_GFX_ENABLE" SCOPE_DEPTH=256 ./ci/blackbox.sh --driver=opae --scope --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
+    CONFIGS="-DEXT_GFX_ENABLE" SCOPE_DEPTH=256 ./ci/blackbox.sh --driver=xrt --scope --app=tex --args="-ipalette4.png -rpalette4_ref_g0.png -g0"
 
     echo "debugging scope done!"
 }
@@ -457,7 +457,7 @@ synthesis()
     echo "begin synthesis tests..."
 
     PREFIX=build_base make -C hw/syn/yosys clean
-    PREFIX=build_base CONFIGS="-DEXT_GFX_ENABLE -DDPI_DISABLE -DEXT_F_DISABLE" make -C hw/syn/yosys elaborate
+    PREFIX=build_base CONFIGS="-DEXT_GFX_ENABLE -DDPI_DISABLE -DEXT_F_DISABLE" make -C hw/syn/yosys synthesis
 
     echo "synthesis tests done!"
 }
