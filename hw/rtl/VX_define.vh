@@ -484,28 +484,33 @@
 `define PERF_COUNTER_ADD_EX(dst, src, field, width, dst_count, src_count, reg_enable) \
     /* verilator lint_off GENUNNAMED */ \
     for (genvar __d = 0; __d < dst_count; ++__d) begin \
-        localparam __count = ((src_count > dst_count) ? ((src_count + dst_count - 1) / dst_count) : 1); \
-        wire [__count-1:0][width-1:0] __reduce_add_i_field; \
-        wire [width-1:0] __reduce_add_o_field; \
-        for (genvar __i = 0; __i < __count; ++__i) begin \
-            assign __reduce_add_i_field[__i] = ``src[__d * __count + __i].``field; \
-        end \
-        VX_reduce #(.DATAW_IN(width), .N(__count), .OP("+")) __reduce_add_field ( \
-            __reduce_add_i_field, \
-            __reduce_add_o_field \
-        ); \
-        if (reg_enable) begin \
-            reg [width-1:0] __reduce_add_r_field; \
-            always @(posedge clk) begin \
-                if (reset) begin \
-                    __reduce_add_r_field <= '0; \
-                end else begin \
-                    __reduce_add_r_field <= __reduce_add_o_field; \
-                end \
+        if (src_count > dst_count) begin \
+            localparam __count = (src_count + dst_count - 1) / dst_count; \
+            wire [__count-1:0][width-1:0] __reduce_add_i_field; \
+            wire [width-1:0] __reduce_add_o_field; \
+            for (genvar __i = 0; __i < __count; ++__i) begin \
+                assign __reduce_add_i_field[__i] = ``src[__d * __count + __i].``field; \
             end \
-            assign ``dst[__d].``field = __reduce_add_r_field; \
+            VX_reduce #(.DATAW_IN(width), .N(__count), .OP("+")) __reduce_add_field ( \
+                __reduce_add_i_field, \
+                __reduce_add_o_field \
+            ); \
+            if (reg_enable) begin \
+                reg [width-1:0] __reduce_add_r_field; \
+                always @(posedge clk) begin \
+                    if (reset) begin \
+                        __reduce_add_r_field <= '0; \
+                    end else begin \
+                        __reduce_add_r_field <= __reduce_add_o_field; \
+                    end \
+                end \
+                assign ``dst[__d].``field = __reduce_add_r_field; \
+            end else begin \
+                assign ``dst[__d].``field = __reduce_add_o_field; \
+            end \
         end else begin \
-            assign ``dst[__d].``field = __reduce_add_o_field; \
+            localparam __i = (__d * src_count) / dst_count; \
+            assign ``dst[__d].``field = ``src[__i].``field; \
         end \
     end \
     /* verilator lint_on GENUNNAMED */
