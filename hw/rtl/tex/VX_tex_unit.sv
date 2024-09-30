@@ -226,7 +226,8 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     `SCOPE_TAP_EX (0, 5, 8, 4, (
             (TCACHE_WORD_SIZE * 8) + TCACHE_TAG_WIDTH + TCACHE_TAG_WIDTH + TCACHE_ADDR_WIDTH + 1 +
             `VX_DCR_ADDR_WIDTH + `VX_DCR_DATA_WIDTH +
-            NUM_LANES * (1 + 2 * 32 + `VX_TEX_LOD_BITS) + `VX_TEX_STAGE_BITS + TAG_WIDTH +
+            1 * (1 + 2 * 32 + `VX_TEX_LOD_BITS) + `VX_TEX_STAGE_BITS + TAG_WIDTH +
+            1 * 32 + TAG_WIDTH +
             `TEX_ADDR_BITS + `TEX_MIPOFF_BITS + 2 * `VX_TEX_LOD_BITS
         ), {
             cache_bus_if[0].req_valid,
@@ -250,11 +251,14 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
             cache_bus_if[0].rsp_data.tag,
             dcr_bus_if.write_addr,
             dcr_bus_if.write_data,
-            tex_bus_if.req_data.mask,
-            tex_bus_if.req_data.coords,
-            tex_bus_if.req_data.lod,
+            tex_bus_if.req_data.mask[0],
+            tex_bus_if.req_data.coords[0][0],
+            tex_bus_if.req_data.coords[1][0],
+            tex_bus_if.req_data.lod[0],
             tex_bus_if.req_data.stage,
             tex_bus_if.req_data.tag,
+            tex_bus_if.rsp_data.texels[0],
+            tex_bus_if.rsp_data.tag,
             tex_dcrs.baseaddr,
             tex_dcrs.mipoff[0],
             tex_dcrs.logdims[0],

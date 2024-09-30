@@ -353,7 +353,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     `SCOPE_TAP_EX (0, 6, 6, 4, (
             (OCACHE_WORD_SIZE * 8) + OCACHE_TAG_WIDTH + OCACHE_TAG_WIDTH + OCACHE_ADDR_WIDTH + 1 +
             `VX_DCR_ADDR_WIDTH + `VX_DCR_DATA_WIDTH +
-            NUM_LANES * (1 + `VX_OM_DIM_BITS + `VX_OM_DIM_BITS + $bits(om_color_t) + `VX_OM_DEPTH_BITS + 1) +
+            1 * (1 + `VX_OM_DIM_BITS + `VX_OM_DIM_BITS + $bits(om_color_t) + `VX_OM_DEPTH_BITS + 1) +
             `OM_ADDR_BITS + `VX_OM_PITCH_BITS + `OM_ADDR_BITS + `VX_OM_PITCH_BITS
         ), {
             cache_bus_if[0].req_valid,
@@ -375,12 +375,12 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
             cache_bus_if[0].rsp_data.tag,
             dcr_bus_if.write_addr,
             dcr_bus_if.write_data,
-            om_bus_if.req_data.mask,
-            om_bus_if.req_data.pos_x,
-            om_bus_if.req_data.pos_y,
-            om_bus_if.req_data.color,
-            om_bus_if.req_data.depth,
-            om_bus_if.req_data.face,
+            om_bus_if.req_data.mask[0],
+            om_bus_if.req_data.pos_x[0],
+            om_bus_if.req_data.pos_y[0],
+            om_bus_if.req_data.color[0],
+            om_bus_if.req_data.depth[0],
+            om_bus_if.req_data.face[0],
             om_dcrs.cbuf_addr,
             om_dcrs.cbuf_pitch,
             om_dcrs.zbuf_addr,
