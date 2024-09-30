@@ -325,7 +325,8 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
     wire raster_bus_fire = raster_bus_if.req_valid && raster_bus_if.req_ready;
     `NEG_EDGE (reset_negedge, reset);
     `SCOPE_TAP_EX (0, 7, 12, 5, (
-            (RCACHE_WORD_SIZE * 8) + RCACHE_TAG_WIDTH + RCACHE_TAG_WIDTH + RCACHE_ADDR_WIDTH + 1 +
+            RCACHE_ADDR_WIDTH + 1 + RCACHE_TAG_WIDTH +
+            (RCACHE_WORD_SIZE * 8) + RCACHE_TAG_WIDTH +
             `VX_DCR_ADDR_WIDTH + `VX_DCR_DATA_WIDTH +
             $bits(raster_stamp_t) +
             $bits(raster_dcrs_t)
@@ -349,9 +350,9 @@ module VX_raster_unit import VX_gpu_pkg::*; import VX_raster_pkg::*; #(
             raster_bus_fire,
             mem_unit_fire
         }, {
-            cache_bus_if[0].req_data.tag,
             cache_bus_if[0].req_data.addr,
             cache_bus_if[0].req_data.rw,
+            cache_bus_if[0].req_data.tag,
             cache_bus_if[0].rsp_data.data,
             cache_bus_if[0].rsp_data.tag,
             dcr_bus_if.write_addr,

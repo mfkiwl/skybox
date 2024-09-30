@@ -348,13 +348,18 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
     `SCOPE_IO_SWITCH (1);
     wire cache_bus_req_fire_0 = cache_bus_if[0].req_valid && cache_bus_if[0].req_ready;
     wire cache_bus_rsp_fire_0 = cache_bus_if[0].rsp_valid && cache_bus_if[0].rsp_ready;
+    wire [OCACHE_TAG_WIDTH-`UUID_WIDTH-1:0] cache_bus_req_tag  = cache_bus_if[0].req_data.tag[OCACHE_TAG_WIDTH-`UUID_WIDTH-1:0];
+    wire [`UUID_WIDTH-1:0] cache_bus_req_uuid = cache_bus_if[0].req_data.tag[OCACHE_TAG_WIDTH-1 -: `UUID_WIDTH];
+    wire [OCACHE_TAG_WIDTH-`UUID_WIDTH-1:0] cache_bus_rsp_tag  = cache_bus_if[0].rsp_data.tag[OCACHE_TAG_WIDTH-`UUID_WIDTH-1:0];
+    wire [`UUID_WIDTH-1:0] cache_bus_rsp_uuid = cache_bus_if[0].rsp_data.tag[OCACHE_TAG_WIDTH-1 -: `UUID_WIDTH];
     wire om_bus_fire = om_bus_if.req_valid && om_bus_if.req_ready;
     `NEG_EDGE (reset_negedge, reset);
     `SCOPE_TAP_EX (0, 6, 6, 4, (
-            (OCACHE_WORD_SIZE * 8) + OCACHE_TAG_WIDTH + OCACHE_TAG_WIDTH + OCACHE_ADDR_WIDTH + 1 +
+            OCACHE_ADDR_WIDTH + 1 + OCACHE_TAG_WIDTH +
+            (OCACHE_WORD_SIZE * 8) + OCACHE_TAG_WIDTH +
             `VX_DCR_ADDR_WIDTH + `VX_DCR_DATA_WIDTH +
             1 * (1 + `VX_OM_DIM_BITS + `VX_OM_DIM_BITS + $bits(om_color_t) + `VX_OM_DEPTH_BITS + 1) +
-            `OM_ADDR_BITS + `VX_OM_PITCH_BITS + `OM_ADDR_BITS + `VX_OM_PITCH_BITS
+            `OM_ADDR_BITS + `VX_OM_PITCH_BITS + `OM_ADDR_BITS + `VX_OM_PITCH_BITS + `UUID_WIDTH
         ), {
             cache_bus_if[0].req_valid,
             cache_bus_if[0].req_ready,
@@ -368,11 +373,13 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
             dcr_bus_if.write_valid,
             om_bus_fire
         }, {
-            cache_bus_if[0].req_data.tag,
             cache_bus_if[0].req_data.addr,
             cache_bus_if[0].req_data.rw,
+            cache_bus_req_tag,
+            cache_bus_req_uuid,
             cache_bus_if[0].rsp_data.data,
-            cache_bus_if[0].rsp_data.tag,
+            cache_bus_rsp_tag,
+            cache_bus_rsp_uuid,
             dcr_bus_if.write_addr,
             dcr_bus_if.write_data,
             om_bus_if.req_data.mask[0],
@@ -381,6 +388,7 @@ module VX_om_unit import VX_gpu_pkg::*; import VX_om_pkg::*; #(
             om_bus_if.req_data.color[0],
             om_bus_if.req_data.depth[0],
             om_bus_if.req_data.face[0],
+            om_bus_if.req_data.uuid,
             om_dcrs.cbuf_addr,
             om_dcrs.cbuf_pitch,
             om_dcrs.zbuf_addr,
