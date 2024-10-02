@@ -212,7 +212,7 @@ module VX_om_mem import VX_gpu_pkg::*; import VX_om_pkg::*; #(
         .UUID_WIDTH   (`UUID_WIDTH),
         .RSP_PARTIAL  (0),
         .MEM_OUT_BUF  (0),
-        .CORE_OUT_BUF (2)
+        .CORE_OUT_BUF (3)
     ) mem_scheduler (
         .clk            (clk),
         .reset          (reset),
