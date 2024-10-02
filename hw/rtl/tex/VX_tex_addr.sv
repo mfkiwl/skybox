@@ -17,8 +17,8 @@
 
 module VX_tex_addr #(
     parameter `STRING INSTANCE_ID = "",
-    parameter REQ_INFOW = 1,
-    parameter NUM_LANES = 1,
+    parameter REQ_TAGW    = 1,
+    parameter NUM_LANES   = 1,
     parameter W_ADDR_BITS = `TEX_ADDR_BITS + 6
 ) (
     input wire clk,
@@ -36,7 +36,7 @@ module VX_tex_addr #(
     input wire [NUM_LANES-1:0][`VX_TEX_LOD_BITS-1:0] req_miplevel,
     input wire [NUM_LANES-1:0][`TEX_MIPOFF_BITS-1:0] req_mipoff,
     input wire [1:0][`VX_TEX_LOD_BITS-1:0] req_logdims,
-    input wire [REQ_INFOW-1:0]          req_info,
+    input wire [REQ_TAGW-1:0]           req_tag,
     output wire                         req_ready,
 
     // outputs
@@ -48,7 +48,7 @@ module VX_tex_addr #(
     output wire [NUM_LANES-1:0][W_ADDR_BITS-1:0] rsp_baseaddr,
     output wire [NUM_LANES-1:0][3:0][31:0] rsp_addr,
     output wire [NUM_LANES-1:0][1:0][`TEX_BLEND_FRAC-1:0] rsp_blends,
-    output wire [REQ_INFOW-1:0]         rsp_info,
+    output wire [REQ_TAGW-1:0]          rsp_tag,
     input wire                          rsp_ready
 );
     `UNUSED_SPARAM (INSTANCE_ID)
@@ -60,10 +60,10 @@ module VX_tex_addr #(
     localparam OFFSET_U_W = `VX_TEX_DIM_BITS + `TEX_LGSTRIDE_MAX;
     localparam OFFSET_V_W = `VX_TEX_DIM_BITS + `VX_TEX_DIM_BITS + `TEX_LGSTRIDE_MAX;
 
-    wire                valid_s0;
+    wire                 valid_s0;
     wire [NUM_LANES-1:0] mask_s0;
     wire [`TEX_FILTER_BITS-1:0] filter_s0;
-    wire [REQ_INFOW-1:0] req_info_s0;
+    wire [REQ_TAGW-1:0] req_tag_s0;
     wire [NUM_LANES-1:0][1:0][`VX_TEX_FXD_FRAC-1:0] clamped_lo, clamped_lo_s0;
     wire [NUM_LANES-1:0][1:0][`VX_TEX_FXD_FRAC-1:0] clamped_hi, clamped_hi_s0;
     wire [NUM_LANES-1:0][1:0][SHIFT_BITS-1:0] dim_shift, dim_shift_s0;
@@ -117,14 +117,14 @@ module VX_tex_addr #(
     end
 
     VX_pipe_register #(
-        .DATAW  (1 + NUM_LANES + `TEX_FILTER_BITS + `TEX_LGSTRIDE_BITS + REQ_INFOW + NUM_LANES * (PITCH_BITS + 2 * SHIFT_BITS + W_ADDR_BITS + 2 * 2 * `VX_TEX_FXD_FRAC)),
+        .DATAW  (1 + NUM_LANES + `TEX_FILTER_BITS + `TEX_LGSTRIDE_BITS + REQ_TAGW + NUM_LANES * (PITCH_BITS + 2 * SHIFT_BITS + W_ADDR_BITS + 2 * 2 * `VX_TEX_FXD_FRAC)),
         .RESETW (1)
     ) pipe_reg0 (
         .clk      (clk),
         .reset    (reset),
         .enable   (~stall_out),
-        .data_in  ({req_valid, req_mask, req_filter, log_stride,    req_info,    log_pitch,    dim_shift,    mip_addr,    clamped_lo,    clamped_hi}),
-        .data_out ({valid_s0,  mask_s0,  filter_s0,  log_stride_s0, req_info_s0, log_pitch_s0, dim_shift_s0, mip_addr_s0, clamped_lo_s0, clamped_hi_s0})
+        .data_in  ({req_valid, req_mask, req_filter, log_stride,    req_tag,    log_pitch,    dim_shift,    mip_addr,    clamped_lo,    clamped_hi}),
+        .data_out ({valid_s0,  mask_s0,  filter_s0,  log_stride_s0, req_tag_s0, log_pitch_s0, dim_shift_s0, mip_addr_s0, clamped_lo_s0, clamped_hi_s0})
     );
 
     // addresses generation
@@ -163,14 +163,14 @@ module VX_tex_addr #(
     assign stall_out = rsp_valid && ~rsp_ready;
 
     VX_pipe_register #(
-        .DATAW  (1 + NUM_LANES + `TEX_FILTER_BITS + `TEX_LGSTRIDE_BITS + (NUM_LANES * W_ADDR_BITS) + (NUM_LANES * 4 * 32) + (2 * NUM_LANES * `TEX_BLEND_FRAC) + REQ_INFOW),
+        .DATAW  (1 + NUM_LANES + `TEX_FILTER_BITS + `TEX_LGSTRIDE_BITS + (NUM_LANES * W_ADDR_BITS) + (NUM_LANES * 4 * 32) + (2 * NUM_LANES * `TEX_BLEND_FRAC) + REQ_TAGW),
         .RESETW (1)
     ) pipe_reg1 (
         .clk      (clk),
         .reset    (reset),
         .enable   (~stall_out),
-        .data_in  ({valid_s0,  mask_s0,  filter_s0,  log_stride_s0, mip_addr_s0,  addr,     blends,     req_info_s0}),
-        .data_out ({rsp_valid, rsp_mask, rsp_filter, rsp_lgstride,  rsp_baseaddr, rsp_addr, rsp_blends, rsp_info})
+        .data_in  ({valid_s0,  mask_s0,  filter_s0,  log_stride_s0, mip_addr_s0,  addr,     blends,     req_tag_s0}),
+        .data_out ({rsp_valid, rsp_mask, rsp_filter, rsp_lgstride,  rsp_baseaddr, rsp_addr, rsp_blends, rsp_tag})
     );
 
     assign req_ready = ~stall_out;
@@ -210,7 +210,7 @@ module VX_tex_addr #(
         if (rsp_valid && rsp_ready) begin
             `TRACE(2, ("%d: %s-addr: valid=%b, req_filter=%0d, lgstride=%0d, addr=", $time, INSTANCE_ID, rsp_mask, rsp_filter, rsp_lgstride))
             `TRACE_ARRAY2D(2, "0x%0h", rsp_addr, 4, NUM_LANES)
-            `TRACE(2, (" (#%0d)\n", rsp_info[REQ_INFOW-1 -: `UUID_WIDTH]))
+            `TRACE(2, (" (#%0d)\n", rsp_tag[REQ_TAGW-1 -: `UUID_WIDTH]))
         end
     end
 `endif

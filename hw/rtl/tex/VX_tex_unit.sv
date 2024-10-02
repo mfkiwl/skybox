@@ -104,7 +104,7 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
 
     VX_tex_addr #(
         .INSTANCE_ID ($sformatf("%s-addr", INSTANCE_ID)),
-        .REQ_INFOW   (TAG_WIDTH + `TEX_FORMAT_BITS),
+        .REQ_TAGW    (TAG_WIDTH + `TEX_FORMAT_BITS),
         .NUM_LANES   (NUM_LANES)
     ) tex_addr (
         .clk        (clk),
@@ -121,7 +121,7 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
         .req_miplevel(req_miplevel),
         .req_mipoff (req_mipoff),
         .req_logdims(req_logdims),
-        .req_info   ({req_tag, req_format}),
+        .req_tag    ({req_tag, req_format}),
         .req_ready  (req_ready),
 
         // outputs
@@ -132,7 +132,7 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
         .rsp_baseaddr(mem_req_baseaddr),
         .rsp_addr   (mem_req_addr),
         .rsp_blends (mem_req_blends),
-        .rsp_info   (mem_req_info),
+        .rsp_tag    (mem_req_info),
         .rsp_ready  (mem_req_ready)
     );
 
@@ -145,7 +145,7 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
 
     VX_tex_mem #(
         .INSTANCE_ID ($sformatf("%s-mem", INSTANCE_ID)),
-        .REQ_INFOW   (TAG_WIDTH + `TEX_FORMAT_BITS + BLEND_FRAC_W),
+        .REQ_TAGW    (TAG_WIDTH + `TEX_FORMAT_BITS + BLEND_FRAC_W),
         .NUM_LANES   (NUM_LANES)
     ) tex_mem (
         .clk       (clk),
@@ -161,13 +161,13 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
         .req_lgstride(mem_req_lgstride),
         .req_baseaddr(mem_req_baseaddr),
         .req_addr  (mem_req_addr),
-        .req_info  ({mem_req_info, mem_req_blends}),
+        .req_tag   ({mem_req_info, mem_req_blends}),
         .req_ready (mem_req_ready),
 
         // outputs
         .rsp_valid (mem_rsp_valid),
         .rsp_data  (mem_rsp_data),
-        .rsp_info  (mem_rsp_info),
+        .rsp_tag   (mem_rsp_info),
         .rsp_ready (mem_rsp_ready)
     );
 
@@ -178,9 +178,13 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     wire [TAG_WIDTH-1:0] sampler_rsp_info;
     wire sampler_rsp_ready;
 
+    wire [BLEND_FRAC_W-1:0] mem_rsp_blends = mem_rsp_info[0 +: BLEND_FRAC_W];
+    wire [`TEX_FORMAT_BITS-1:0] mem_rsp_format = mem_rsp_info[BLEND_FRAC_W +: `TEX_FORMAT_BITS];
+    wire [TAG_WIDTH-1:0] mem_rsp_tag = mem_rsp_info[(BLEND_FRAC_W + `TEX_FORMAT_BITS) +: TAG_WIDTH];
+
     VX_tex_sampler #(
         .INSTANCE_ID ($sformatf("%s-sampler", INSTANCE_ID)),
-        .REQ_INFOW   (TAG_WIDTH),
+        .REQ_TAGW    (TAG_WIDTH),
         .NUM_LANES   (NUM_LANES)
     ) tex_sampler (
         .clk        (clk),
@@ -189,15 +193,15 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
         // inputs
         .req_valid  (mem_rsp_valid),
         .req_data   (mem_rsp_data),
-        .req_blends (mem_rsp_info[0 +: BLEND_FRAC_W]),
-        .req_format (mem_rsp_info[BLEND_FRAC_W +: `TEX_FORMAT_BITS]),
-        .req_info   (mem_rsp_info[(BLEND_FRAC_W + `TEX_FORMAT_BITS) +: TAG_WIDTH]),
+        .req_blends (mem_rsp_blends),
+        .req_format (mem_rsp_format),
+        .req_tag    (mem_rsp_tag),
         .req_ready  (mem_rsp_ready),
 
         // outputs
         .rsp_valid  (sampler_rsp_valid),
         .rsp_data   (sampler_rsp_data),
-        .rsp_info   (sampler_rsp_info),
+        .rsp_tag    (sampler_rsp_info),
         .rsp_ready  (sampler_rsp_ready)
     );
 
@@ -229,9 +233,10 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     wire [`UUID_WIDTH-1:0] tex_bus_req_uuid = tex_bus_if.req_data.tag[`TEX_REQ_ARB1_TAG_WIDTH-1 -: `UUID_WIDTH];
     wire [`TEX_REQ_ARB1_TAG_WIDTH-`UUID_WIDTH-1:0] tex_bus_rsp_tag = tex_bus_if.rsp_data.tag[`TEX_REQ_ARB1_TAG_WIDTH-`UUID_WIDTH-1:0];
     wire [`UUID_WIDTH-1:0] tex_bus_rsp_uuid = tex_bus_if.rsp_data.tag[`TEX_REQ_ARB1_TAG_WIDTH-1 -: `UUID_WIDTH];
-    wire tex_bus_fire = tex_bus_if.req_valid && tex_bus_if.req_ready;
+    wire tex_bus_req_fire = tex_bus_if.req_valid && tex_bus_if.req_ready;
+    wire tex_bus_rsp_fire = tex_bus_if.rsp_valid && tex_bus_if.rsp_ready;
     `NEG_EDGE (reset_negedge, reset);
-    `SCOPE_TAP_EX (0, 5, 8, 4, (
+    `SCOPE_TAP_EX (0, 5, 8, 5, (
             TCACHE_ADDR_WIDTH + 1 + TCACHE_TAG_WIDTH +
             (TCACHE_WORD_SIZE * 8) + TCACHE_TAG_WIDTH +
             `VX_DCR_ADDR_WIDTH + `VX_DCR_DATA_WIDTH +
@@ -251,7 +256,8 @@ module VX_tex_unit import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
             cache_bus_req_fire_0,
             cache_bus_rsp_fire_0,
             dcr_bus_if.write_valid,
-            tex_bus_fire
+            tex_bus_req_fire,
+            tex_bus_rsp_fire
         },{
             cache_bus_if[0].req_data.addr,
             cache_bus_if[0].req_data.rw,

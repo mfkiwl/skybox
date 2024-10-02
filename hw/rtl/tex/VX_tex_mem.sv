@@ -17,7 +17,7 @@
 
 module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     parameter `STRING INSTANCE_ID = "",
-    parameter REQ_INFOW   = 1,
+    parameter REQ_TAGW    = 1,
     parameter NUM_LANES   = 1,
     parameter W_ADDR_BITS = `TEX_ADDR_BITS + 6
 ) (
@@ -34,17 +34,17 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     input wire [`TEX_LGSTRIDE_BITS-1:0] req_lgstride,
     input wire [NUM_LANES-1:0][W_ADDR_BITS-1:0] req_baseaddr,
     input wire [NUM_LANES-1:0][3:0][31:0] req_addr,
-    input wire [REQ_INFOW-1:0]          req_info,
+    input wire [REQ_TAGW-1:0]           req_tag,
     output wire                         req_ready,
 
     // outputs
     output wire                         rsp_valid,
     output wire [NUM_LANES-1:0][3:0][31:0] rsp_data,
-    output wire [REQ_INFOW-1:0]         rsp_info,
+    output wire [REQ_TAGW-1:0]          rsp_tag,
     input wire                          rsp_ready
 );
 
-    localparam TAG_WIDTH = REQ_INFOW + `TEX_FILTER_BITS + `TEX_LGSTRIDE_BITS + (NUM_LANES * 4 * 2) + 4;
+    localparam TAG_WIDTH = REQ_TAGW + `TEX_FILTER_BITS + `TEX_LGSTRIDE_BITS + (NUM_LANES * 4 * 2) + 4;
 
     wire                           mem_req_valid;
     wire [3:0][NUM_LANES-1:0]      mem_req_mask;
@@ -103,7 +103,7 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
     // submit request to memory
 
     assign mem_req_valid = req_valid;
-    assign mem_req_tag   = {req_info, req_filter, req_lgstride, mem_req_align, mem_req_dups};
+    assign mem_req_tag   = {req_tag, req_filter, req_lgstride, mem_req_align, mem_req_dups};
     assign req_ready     = mem_req_ready;
 
     // schedule memory request
@@ -188,13 +188,13 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
 
     // handle memory response
 
-    wire [REQ_INFOW-1:0]          rsp_info_s;
+    wire [REQ_TAGW-1:0]           rsp_tag_s;
     wire [`TEX_FILTER_BITS-1:0]   rsp_filter;
     wire [`TEX_LGSTRIDE_BITS-1:0] rsp_lgstride;
     wire [3:0][NUM_LANES-1:0][1:0] mem_rsp_align;
     wire [3:0]                    mem_rsp_dups;
 
-    assign {rsp_info_s, rsp_filter, rsp_lgstride, mem_rsp_align, mem_rsp_dups} = mem_rsp_tag;
+    assign {rsp_tag_s, rsp_filter, rsp_lgstride, mem_rsp_align, mem_rsp_dups} = mem_rsp_tag;
 
     wire [NUM_LANES-1:0][3:0][31:0] mem_rsp_data_qual;
 
@@ -226,16 +226,15 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
         end
     end
 
-    VX_elastic_buffer #(
-        .DATAW   (REQ_INFOW + (4 * NUM_LANES * 32)),
-        .OUT_REG (1)
+    VX_pipe_buffer #(
+        .DATAW (REQ_TAGW + (4 * NUM_LANES * 32))
     ) rsp_pipe_reg (
         .clk       (clk),
         .reset     (reset),
         .valid_in  (mem_rsp_valid),
         .ready_in  (mem_rsp_ready),
-        .data_in   ({rsp_info_s, mem_rsp_data_qual}),
-        .data_out  ({rsp_info,   rsp_data}),
+        .data_in   ({rsp_tag_s, mem_rsp_data_qual}),
+        .data_out  ({rsp_tag,   rsp_data}),
         .valid_out (rsp_valid),
         .ready_out (rsp_ready)
     );
@@ -248,12 +247,12 @@ module VX_tex_mem import VX_gpu_pkg::*; import VX_tex_pkg::*; #(
             `TRACE_ARRAY1D(2, "0x%0h", req_baseaddr, NUM_LANES)
             `TRACE(2, (", addr=0x"))
             `TRACE_ARRAY2D(2, "0x%0h", req_addr, 4, NUM_LANES)
-            `TRACE(2, (" (#%0d)\n", req_info[REQ_INFOW-1 -: `UUID_WIDTH]))
+            `TRACE(2, (" (#%0d)\n", req_tag[REQ_TAGW-1 -: `UUID_WIDTH]))
         end
         if (rsp_valid && rsp_ready) begin
             `TRACE(2, ("%d: %s-mem-rsp: data=", $time, INSTANCE_ID))
             `TRACE_ARRAY2D(2, "0x%0h", rsp_data, 4, NUM_LANES)
-            `TRACE(2, (" (#%0d)\n", rsp_info[REQ_INFOW-1 -: `UUID_WIDTH]))
+            `TRACE(2, (" (#%0d)\n", rsp_tag[REQ_TAGW-1 -: `UUID_WIDTH]))
         end
     end
 `endif

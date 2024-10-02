@@ -17,7 +17,7 @@
 
 module VX_tex_sampler #(
     parameter `STRING INSTANCE_ID = "",
-    parameter REQ_INFOW = 1,
+    parameter REQ_TAGW = 1,
     parameter NUM_LANES = 1
 ) (
     input wire clk,
@@ -28,19 +28,19 @@ module VX_tex_sampler #(
     input wire [`TEX_FORMAT_BITS-1:0]   req_format,
     input wire [NUM_LANES-1:0][1:0][`TEX_BLEND_FRAC-1:0] req_blends,
     input wire [NUM_LANES-1:0][3:0][31:0] req_data,
-    input wire [REQ_INFOW-1:0]          req_info,
+    input wire [REQ_TAGW-1:0]           req_tag,
     output wire                         req_ready,
 
     // ouputs
     output wire                         rsp_valid,
     output wire [NUM_LANES-1:0][31:0]   rsp_data,
-    output wire [REQ_INFOW-1:0]         rsp_info,
+    output wire [REQ_TAGW-1:0]          rsp_tag,
     input wire                          rsp_ready
 );
     `UNUSED_SPARAM (INSTANCE_ID)
 
     wire valid_s0, valid_s1;
-    wire [REQ_INFOW-1:0] req_info_s0, req_info_s1;
+    wire [REQ_TAGW-1:0] req_tag_s0, req_tag_s1;
     wire [NUM_LANES-1:0][31:0] texel_ul, texel_uh;
     wire [NUM_LANES-1:0][1:0][`TEX_BLEND_FRAC-1:0] req_blends_s0;
     wire [NUM_LANES-1:0][`TEX_BLEND_FRAC-1:0] blend_v_s0, blend_v_s1;
@@ -59,14 +59,14 @@ module VX_tex_sampler #(
     end
 
     VX_pipe_register #(
-        .DATAW  (1 + REQ_INFOW + (NUM_LANES * 2 * `TEX_BLEND_FRAC) + (NUM_LANES * 4 * 32)),
+        .DATAW  (1 + REQ_TAGW + (NUM_LANES * 2 * `TEX_BLEND_FRAC) + (NUM_LANES * 4 * 32)),
         .RESETW (1)
     ) pipe_reg0 (
         .clk      (clk),
         .reset    (reset),
         .enable   (~stall_out),
-        .data_in  ({req_valid, req_info,    req_blends,    fmt_texels}),
-        .data_out ({valid_s0,  req_info_s0, req_blends_s0, fmt_texels_s0})
+        .data_in  ({req_valid, req_tag,    req_blends,    fmt_texels}),
+        .data_out ({valid_s0,  req_tag_s0, req_blends_s0, fmt_texels_s0})
     );
 
     for (genvar i = 0; i < NUM_LANES; ++i) begin : g_tex_lerp_U
@@ -101,15 +101,15 @@ module VX_tex_sampler #(
     end
 
     VX_shift_register #(
-        .DATAW  (1 + REQ_INFOW + (NUM_LANES * `TEX_BLEND_FRAC)),
+        .DATAW  (1 + REQ_TAGW + (NUM_LANES * `TEX_BLEND_FRAC)),
         .DEPTH  (3),
         .RESETW (1)
     ) shift_reg1 (
         .clk      (clk),
         .reset    (reset),
         .enable   (~stall_out),
-        .data_in  ({valid_s0, req_info_s0, blend_v_s0}),
-        .data_out ({valid_s1, req_info_s1, blend_v_s1})
+        .data_in  ({valid_s0, req_tag_s0, blend_v_s0}),
+        .data_out ({valid_s1, req_tag_s1, blend_v_s1})
     );
 
     for (genvar i = 0; i < NUM_LANES; ++i) begin : g_tex_lerp_V
@@ -131,15 +131,15 @@ module VX_tex_sampler #(
     assign stall_out = rsp_valid && ~rsp_ready;
 
     VX_shift_register #(
-        .DATAW  (1 + REQ_INFOW),
+        .DATAW  (1 + REQ_TAGW),
         .DEPTH  (3),
         .RESETW (1)
     ) shift_reg2 (
         .clk      (clk),
         .reset    (reset),
         .enable   (~stall_out),
-        .data_in  ({valid_s1,  req_info_s1}),
-        .data_out ({rsp_valid, rsp_info})
+        .data_in  ({valid_s1,  req_tag_s1}),
+        .data_out ({rsp_valid, rsp_tag})
     );
 
     // can accept new request?
@@ -154,12 +154,12 @@ module VX_tex_sampler #(
             `TRACE_ARRAY1D(2, "0x%0h", req_blends[0], NUM_LANES)
             `TRACE(2, (", v0="))
             `TRACE_ARRAY1D(2, "0x%0h", req_blends[1], NUM_LANES)
-            `TRACE(2, (" (#%0d)\n", req_info[REQ_INFOW-1 -: `UUID_WIDTH]))
+            `TRACE(2, (" (#%0d)\n", req_tag[REQ_TAGW-1 -: `UUID_WIDTH]))
         end
         if (rsp_valid && rsp_ready) begin
             `TRACE(2, ("%d: %s-sampler-rsp: data=", $time, INSTANCE_ID))
             `TRACE_ARRAY1D(2, "0x%0h", rsp_data, NUM_LANES)
-            `TRACE(2, (" (#%0d)\n", rsp_info[REQ_INFOW-1 -: `UUID_WIDTH]))
+            `TRACE(2, (" (#%0d)\n", rsp_tag[REQ_TAGW-1 -: `UUID_WIDTH]))
         end
     end
 `endif
